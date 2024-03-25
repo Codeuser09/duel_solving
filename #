@@ -49,20 +49,11 @@ class better_cube:
         self.ring_matrix = [side_ring_in, forward_ring_in]
         self.top_value = self.ring_matrix[1][2]
 
-     def get_index(self, value):
-        if value > 0:
-            return (value %  4)
-        else:
-            return (value % -4)
-
      def roll (self, shift, isForward):
-#        shift %= 4 if  shift > 0 else -4 #Module operators with negative numbers are weird
+        shift %= 4 if  shift > 0 else -4 #Module operators with negative numbers are weird
         matrix_copy = self.ring_matrix.copy()
-        for i in range(shift):
-            for i in range(len(self.ring_matrix[isForward])):
-                index_to_put = self.get_index(i+1)
-                self.ring_matrix[isForward][i] = matrix_copy[isForward][index_to_put]
-        self.ring_matrix = matrix_copy
+        for i in range(len(self.ring_matrix[0])):
+            self.ring_matrix[isForward][i+shift] = matrix_copy[isForward][i]
         self.top_value = self.ring_matrix[isForward][2]
 
 class game:
@@ -70,5 +61,6 @@ class game:
         game_matrix = np.zeros((9, 8))
 
 best_cube = better_cube([6, 4, 1, 3], [6, 2, 1, 5])
-best_cube.roll(shift=1, isForward=1)
+print(best_cube.top_value)
+best_cube.roll(ring=4, isForward=1)
 print(best_cube.top_value)
