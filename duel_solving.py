@@ -20,6 +20,6 @@ class game:
     def __init__(self):
         game_matrix = np.zeros((9, 8))
 
-best_cube = cube(side_ring_in=[6, 4, 1, 3], forward_ring_in=[6, 2, 1, 5])
-best_cube.roll(shift=1, isForward=0)
-print(best_cube.top_value)
+start_cube = cube(side_ring_in=[6, 4, 1, 3], forward_ring_in=[6, 2, 1, 5])
+start_cube.roll(shift=-1, isForward=0)
+print(start_cube.top_value)
