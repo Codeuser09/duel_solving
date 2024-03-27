@@ -1,1 +1,1 @@
-/home/simon/Projects/Rust/duel_solving/target/debug/duel_solving: /home/simon/Projects/Rust/duel_solving/src/main.rs
+/home/simon/Projects/Rust/duel_solving/target/debug/duel_solving: /home/simon/Projects/Rust/duel_solving/src/cube.rs /home/simon/Projects/Rust/duel_solving/src/game.rs /home/simon/Projects/Rust/duel_solving/src/main.rs /home/simon/Projects/Rust/duel_solving/src/start_cubes.rs
