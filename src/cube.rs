@@ -1,3 +1,5 @@
+pub type Cube = [[i32; 4]; 2];
+
 fn get_index(index: i32) -> usize {
     let index_wrapped: i32 = index % 4;
     let index_final: usize = if index_wrapped >= 0 {

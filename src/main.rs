@@ -1,10 +1,8 @@
 mod cube;
 mod game;
-mod start_cubes;
+mod move_cube;
 
 fn main() {
-    let start_cubes = start_cubes::StartCubes::new();
-    let board = game::init_game(&start_cubes);
-    game::display_board_cubes(board);
-    game::display_board_tops(board);
+    let board = game::generate_startpos();
+    let mut index_matrix = game::generate_index_matrix(board);
 }
