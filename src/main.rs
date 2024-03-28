@@ -1,8 +1,17 @@
+use cube::MoveArray;
+use game::Board;
+use game::InfoMatrix;
+
 mod cube;
 mod game;
-mod move_cube;
+mod legality_check;
 
 fn main() {
-    let board = game::generate_startpos();
-    let mut index_matrix = game::generate_index_matrix(board);
+    let mut board: Board = game::generate_startpos();
+    let mut index_matrix: InfoMatrix = game::generate_info_matrix(board);
+
+    //let move_array: MoveArray = (0, 0, 3, 0);
+    //cube::make_move(&mut board, &mut index_matrix, move_array);
+
+    game::display_info(board, index_matrix);
 }
