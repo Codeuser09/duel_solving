@@ -1,1 +1,0 @@
-/home/simon/Projects/programming/Rust/duel_solving/target/debug/duel_solving: /home/simon/Projects/programming/Rust/duel_solving/src/cube.rs /home/simon/Projects/programming/Rust/duel_solving/src/game.rs /home/simon/Projects/programming/Rust/duel_solving/src/legality_check.rs /home/simon/Projects/programming/Rust/duel_solving/src/main.rs
