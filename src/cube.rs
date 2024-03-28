@@ -66,7 +66,7 @@ pub fn get_top(cube_matrix: [[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
 }
 
-pub fn make_move(board: &mut Board, index_matrix: &mut InfoMatrix, move_array: MoveArray) {
+pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: MoveArray) {
     // move_array = [cube_id, is_forward, forward_fields, turn_direction]
     // Do you start moving forwards,
     // how many fields do you want to go forwards (or backwards) before turning,
@@ -74,15 +74,18 @@ pub fn make_move(board: &mut Board, index_matrix: &mut InfoMatrix, move_array: M
 
     let (cube_id, is_sideways, forward_fields, turn_direction) = move_array;
 
-    let current_cube_x = index_matrix[cube_id as usize][0] as usize;
-    let current_cube_y = index_matrix[cube_id as usize][1] as usize;
+    let current_cube_x = info_matrix[cube_id as usize][0] as usize;
+    let current_cube_y = info_matrix[cube_id as usize][1] as usize;
 
-    let available_moves: i32 = get_top(board[current_cube_x][current_cube_y]);
+    let mut position_matrix = [current_cube_x, current_cube_y];
+
+    let mut available_moves: i32 = get_top(board[current_cube_x][current_cube_y]);
 
     for i in 0..available_moves {
         if i < forward_fields {
             print!("{i}");
-            index_matrix[cube_id as usize][is_sideways as usize] += 1;
+            position_matrix[is_sideways as usize] += 1;
+            available_moves -= 1;
         }
     }
 
