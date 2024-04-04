@@ -1,14 +1,17 @@
-use crate::cube;
-use cube::Cube;
+use crate::cube::display_cube;
+use crate::cube::get_top;
+use crate::cube::roll;
+
+use crate::cube::Cube;
 
 pub type Board = [[[[i32; 4]; 2]; 9]; 8];
 pub type InfoMatrix = Vec<[i32; 4]>;
 
 pub fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
     let five: Cube = [[5, 3, 2, 4], [5, 1, 2, 6]];
-    let one: Cube = cube::roll(1, true, five);
-    let two: Cube = cube::roll(1, true, one);
-    let six: Cube = cube::roll(1, true, two);
+    let one: Cube = roll(1, true, five);
+    let two: Cube = roll(1, true, one);
+    let six: Cube = roll(1, true, two);
     let king: Cube = [[1; 4]; 2];
     let zero: Cube = [[0; 4]; 2];
 
@@ -78,7 +81,7 @@ pub fn display_board(board: &Board) {
     for row in board {
         print!("[");
         for cube in row {
-            cube::display_cube(cube);
+            display_cube(cube);
             print!(", ")
         }
         print!("]");
@@ -90,7 +93,7 @@ pub fn display_tops(board: &Board) {
     for row in board {
         print!("[");
         for cube in row {
-            print!("{}, ", cube::get_top(cube));
+            print!("{}, ", get_top(cube));
         }
         print!("]");
         println!();

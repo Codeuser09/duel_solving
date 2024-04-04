@@ -1,0 +1,1 @@
+/home/simon/Projects/duel_solving/target/debug/duel_solving: /home/simon/Projects/duel_solving/src/cube.rs /home/simon/Projects/duel_solving/src/game.rs /home/simon/Projects/duel_solving/src/legality_check.rs /home/simon/Projects/duel_solving/src/main.rs

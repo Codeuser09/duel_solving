@@ -119,12 +119,16 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &M
             let (is_sideways, is_bw) = change_direction(&turn_direction);
         }
         print!(
-            "Current index: {}, is_sideways: {}, forward: {}, new position matrix: {}",
+            "Current index: {}, is_sideways: {}, forward: {}",
             i,
             is_sideways,
             get_smallest_unit(&forward_fields)
         );
-        display_info_matrix(&new_position);
+        //display_info_matrix(new_position);
+        for element in original_position {
+            print!("{}", element);
+        }
+
         new_position[*is_sideways as usize] += get_smallest_unit(&forward_fields) as usize;
     }
 

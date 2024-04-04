@@ -6,6 +6,8 @@ mod cube;
 mod game;
 mod legality_check;
 
+use cube::make_move;
+
 fn main() {
     let mut board: Board = game::generate_startpos();
     let mut info_matrix: InfoMatrix = game::generate_info_matrix(board);
@@ -20,7 +22,7 @@ fn main() {
     println!();
     println!("New board");
 
-    cube::make_move(&mut board, &mut info_matrix, &move_array);
+    make_move(&mut board, &mut info_matrix, &move_array);
 
     game::display_info(&board, &info_matrix);
 }
