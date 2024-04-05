@@ -1,6 +1,6 @@
-use crate::game::display_info_matrix;
 use crate::game::Board;
 use crate::game::InfoMatrix;
+use crate::legality_check::is_legal_move;
 
 pub type Cube = [[i32; 4]; 2];
 pub type MoveArray = (i32, i32, i32, i32);
@@ -67,18 +67,18 @@ pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
 }
 
-fn change_direction(turn_direction: &i32, forward_fields: &mut i32) -> (i32, i32) {
+fn change_direction(turn_direction: &i32, forward_fields: &i32) -> (i32, i32) {
     if *turn_direction == 0 {
-        return (0, 0);
+        return (0, *forward_fields);
     }
     if *turn_direction == 1 {
-        return (1, 0);
+        return (1, -*forward_fields);
     }
     if *turn_direction == 2 {
-        return (0, 1);
+        return (0, *forward_fields);
     }
     if *turn_direction == 3 {
-        return (1, 1);
+        return (1, -*forward_fields);
     } else {
         return (0, 0);
     }
@@ -160,7 +160,9 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &M
         let position_change = is_bw as usize * get_smallest_unit(&forward_fields) as usize;
 
         //Setting up the new position
-        new_position[is_sideways as usize] += position_change;
+        if is_legal_move() == true {
+            new_position[is_sideways as usize] += position_change;
+        }
     }
 
     //Setting up our original cube that will be placed on the board
