@@ -78,6 +78,7 @@ pub fn display_info(board: &Board, info_matrix: &InfoMatrix) {
 }
 
 pub fn display_board(board: &Board) {
+    println!("Board:");
     for row in board {
         print!("[");
         for cube in row {
@@ -90,6 +91,7 @@ pub fn display_board(board: &Board) {
 }
 
 pub fn display_tops(board: &Board) {
+    println!("Tops");
     for row in board {
         print!("[");
         for cube in row {
@@ -101,6 +103,7 @@ pub fn display_tops(board: &Board) {
 }
 
 pub fn display_info_matrix(index_matrix: &InfoMatrix) {
+    println!("Info matrix:");
     for element in index_matrix {
         print!("[");
         for coordinate in element {

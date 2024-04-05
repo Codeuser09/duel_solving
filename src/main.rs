@@ -17,7 +17,7 @@ fn main() {
 
     game::display_info(&board, &info_matrix);
 
-    let move_array: MoveArray = (0, 1, 2, 0);
+    let move_array: MoveArray = (0, 0, 2, 0);
 
     println!();
     println!("New board");

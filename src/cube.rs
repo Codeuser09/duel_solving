@@ -67,7 +67,7 @@ pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
 }
 
-fn change_direction(turn_direction: &i32) -> (i32, i32) {
+fn change_direction(turn_direction: &i32, forward_fields: &mut i32) -> (i32, i32) {
     if *turn_direction == 0 {
         return (0, 0);
     }
@@ -105,34 +105,80 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &M
 
     let (cube_id, is_sideways, forward_fields, turn_direction) = move_array;
 
+    let is_bw = get_smallest_unit(forward_fields);
+
     let original_position = [
         info_matrix[*cube_id as usize][0] as usize,
         info_matrix[*cube_id as usize][1] as usize,
     ];
 
-    let mut new_position = original_position.to_vec();
+    let mut is_sideways = *is_sideways;
+    let mut forward_fields = *forward_fields;
+
+    let mut new_position = original_position.clone();
 
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
 
+    let original_cube = board[original_position[0]][original_position[1]].clone();
+    let new_cube = roll(forward_fields, is_sideways != 0, original_cube);
+
+    /* working on sideways functionality
+    let is_sideways_temp = change_direction(&turn_direction, &mut forward_fields).0;
+    let forward_fields_temp =
+        forward_fields - change_direction(&turn_direction, &mut forward_fields).1;
+
+    if *turn_direction != 0 {
+        new_cube = roll(
+            available_moves - forward_fields,
+            is_sideways_temp != 0,
+            new_cube,
+        );
+    }
+    */
+
     for i in 0..available_moves {
-        if *turn_direction != 0 && i == *forward_fields {
-            let (is_sideways, is_bw) = change_direction(&turn_direction);
+        //Info printing
+        println!();
+
+        //For changing direction if needed
+        if *turn_direction != 0 && i == forward_fields {
+            is_sideways = change_direction(&turn_direction, &mut forward_fields).0;
+            forward_fields = change_direction(&turn_direction, &mut forward_fields).1;
         }
+
+        //More info
         print!(
-            "Current index: {}, is_sideways: {}, forward: {}",
+            "Current index: {}, is_sideways: {}, is_backwards: {}, forward: {}, available moves: {}",
             i,
             is_sideways,
-            get_smallest_unit(&forward_fields)
+            is_bw,
+            get_smallest_unit(&forward_fields),
+            available_moves
         );
-        //display_info_matrix(new_position);
-        for element in original_position {
-            print!("{}", element);
-        }
+        println!();
 
-        new_position[*is_sideways as usize] += get_smallest_unit(&forward_fields) as usize;
+        let position_change = is_bw as usize * get_smallest_unit(&forward_fields) as usize;
+
+        //Setting up the new position
+        new_position[is_sideways as usize] += position_change;
     }
 
+    //Setting up our original cube that will be placed on the board
+
+    //Setting zero cube for convenience
+    let zero_cube = [[0; 4]; 2];
+
+    //Info
+    for element in &new_position {
+        println!("new position: {}", element);
+    }
+    display_cube(&new_cube);
+
     //TODO: Implement rolling for the cube
-    board[new_position[0]][new_position[1]] = board[original_position[0]][original_position[1]];
-    board[original_position[0]][original_position[1]] = [[0; 4]; 2];
+    // Actually placing new cube
+    board[new_position[0]][new_position[1]] = new_cube;
+    board[original_position[0]][original_position[1]] = zero_cube;
+
+    info_matrix[*cube_id as usize][0] = new_position[0] as i32;
+    info_matrix[*cube_id as usize][1] = new_position[1] as i32;
 }
