@@ -15,14 +15,19 @@ fn main() {
     //let move_array: MoveArray = (0, 0, 3, 0);
     //cube::make_move(&mut board, &mut index_matrix, move_array);
 
+    // move_array = [cube_id, is_sidways, forward_fields, turn_direction]
+
     game::display_info(&board, &info_matrix);
 
-    let move_array: MoveArray = (0, 0, 2, 0);
+    let mut move_array: MoveArray = (0, 0, 2, 1);
 
     println!();
-    println!("New board");
+    println!();
+    println!();
+    println!();
+    println!("New board:");
 
-    make_move(&mut board, &mut info_matrix, &move_array);
+    make_move(&mut board, &mut info_matrix, &mut move_array);
 
     game::display_info(&board, &info_matrix);
 }

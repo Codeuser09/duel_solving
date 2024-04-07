@@ -23,10 +23,9 @@ pub fn generate_startpos() -> Board {
 
     let cube_row = [five, one, two, six, king, six, two, one, five];
     let zero_row = [zero; 9];
-    let board = [
+    [
         cube_row, zero_row, zero_row, zero_row, zero_row, zero_row, zero_row, cube_row,
-    ];
-    board
+    ]
 }
 
 pub fn generate_info_matrix(board: Board) -> InfoMatrix {
@@ -83,7 +82,6 @@ pub fn display_board(board: &Board) {
         print!("[");
         for cube in row {
             display_cube(cube);
-            print!(", ")
         }
         print!("]");
         println!();
@@ -95,7 +93,7 @@ pub fn display_tops(board: &Board) {
     for row in board {
         print!("[");
         for cube in row {
-            print!("{}, ", get_top(cube));
+            print!("{}", get_top(cube));
         }
         print!("]");
         println!();
@@ -109,6 +107,6 @@ pub fn display_info_matrix(index_matrix: &InfoMatrix) {
         for coordinate in element {
             print!("{}", coordinate);
         }
-        print!("], ");
+        print!("]");
     }
 }
