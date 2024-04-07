@@ -7,7 +7,7 @@ use crate::cube::Cube;
 pub type Board = [[[[i32; 4]; 2]; 9]; 8];
 pub type InfoMatrix = Vec<[i32; 4]>;
 
-pub fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
+fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
     let five: Cube = [[5, 3, 2, 4], [5, 1, 2, 6]];
     let one: Cube = roll(1, true, five);
     let two: Cube = roll(1, true, one);
@@ -18,13 +18,23 @@ pub fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
     (five, one, two, six, king, zero)
 }
 
+fn black_cube_row(cube_row: [Cube; 9]) -> [Cube; 9] {
+    let mut cube_row_b = cube_row.clone();
+    for (_i, cube) in cube_row_b.iter_mut().enumerate() {
+        *cube = roll(2, false, *cube);
+        *cube = roll(2, true, *cube);
+    }
+    cube_row_b
+}
+
 pub fn generate_startpos() -> Board {
     let (five, one, two, six, king, zero) = generate_startcubes();
 
-    let cube_row = [five, one, two, six, king, six, two, one, five];
+    let cube_row_w = [five, one, two, six, king, six, two, one, five];
+    let cube_row_b = black_cube_row(cube_row_w);
     let zero_row = [zero; 9];
     [
-        cube_row, zero_row, zero_row, zero_row, zero_row, zero_row, zero_row, cube_row,
+        cube_row_b, zero_row, zero_row, zero_row, zero_row, zero_row, zero_row, cube_row_w,
     ]
 }
 
