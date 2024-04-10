@@ -67,13 +67,17 @@ pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
 }
 
 fn get_direction_unit(is_sw: &i32, is_bw: &i32) -> i32 {
-    if *is_sw == 1 && *is_bw == -1 {
-        return 1;
+    if *is_sw == 0 && *is_bw == 1 {
+        return 0;
     }
     if *is_sw == 1 && *is_bw == 1 {
+        return 1;
+    }
+
+    if *is_sw == 0 && *is_bw == -1 {
         return 2;
     }
-    if *is_sw == 0 && *is_bw == -1 {
+    if *is_sw == 1 && *is_bw == -1 {
         return 3;
     } else {
         return 0;
@@ -97,22 +101,16 @@ fn get_direction(direction_unit: &i32) -> (i32, i32) {
 fn change_direction(turn_direction: &i32, is_sw: &i32, is_bw: &i32) -> (i32, i32) {
     //Returns (is_sw, is_bw)
     // 0 = no change
-
-    if *turn_direction > 2 {
-        panic!("Turn direction can not be larger than 2");
-    }
-
+    //
     println!();
     println!("Changed direction");
     //
     let mut direction_unit = get_direction_unit(&is_sw, &is_bw);
 
-    println!();
     println!("direction_unit: {}", direction_unit);
 
     direction_unit = (direction_unit + *turn_direction) % 3;
 
-    println!();
     println!("new direction_unit: {}", direction_unit);
 
     let new_is_sw = get_direction(&direction_unit).0;
@@ -129,6 +127,14 @@ fn get_smallest_unit(number: &i32) -> i32 {
         return 1;
     } else {
         return 0;
+    }
+}
+
+fn invert_is_bw(is_bw: &i32) -> i32 {
+    if *is_bw == -1 {
+        1
+    } else {
+        -1
     }
 }
 
@@ -156,21 +162,36 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &m
 
     let mut new_cube;
 
+    let mut is_bw = get_smallest_unit(&forward_fields);
+
+    //This code is working correctly
     if *turn_direction != 0 {
         if *is_sw == 1 {
-            new_cube = roll(-*forward_fields, *is_sw != 0, original_cube);
+            new_cube = roll(
+                -*forward_fields * invert_is_bw(&is_bw),
+                *is_sw != 0,
+                original_cube,
+            );
         } else {
-            new_cube = roll(*forward_fields, *is_sw != 0, original_cube);
+            println!("forward_fields * is_bw: {}", *forward_fields * is_bw);
+            new_cube = roll(
+                *forward_fields * invert_is_bw(&is_bw),
+                *is_sw != 0,
+                original_cube,
+            );
         }
     } else {
         if *is_sw == 1 {
-            new_cube = roll(-available_moves, *is_sw != 0, original_cube);
+            new_cube = roll(-available_moves * is_bw, *is_sw != 0, original_cube);
         } else {
-            new_cube = roll(available_moves, *is_sw != 0, original_cube);
+            new_cube = roll(available_moves * is_bw, *is_sw != 0, original_cube);
         }
     }
 
-    let mut is_bw = get_smallest_unit(&forward_fields);
+    println!();
+    println!("cube after the first roll operation:");
+    display_cube(&new_cube);
+    println!();
 
     /* working on sideways functionality
     let is_sw_temp = change_direction(&turn_direction, &mut forward_fields).0;
@@ -187,27 +208,33 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &m
     */
 
     for i in 0..available_moves {
-        //Info printing
-
         //For changing direction if needed
         if *turn_direction != 0 && i == *forward_fields
             || *turn_direction != 0 && i == -*forward_fields
         {
-            let new_direction = change_direction(&turn_direction, &is_sw, &is_sw);
+            let new_direction = change_direction(turn_direction, is_sw, &is_bw);
             *is_sw = new_direction.0;
             is_bw = new_direction.1;
 
+            println!("{}", invert_is_bw(&is_bw));
+
+            println!(
+                "Available moves: {available_moves} Forward fields: {forward_fields} invert_is_bw: {} -am + ff * invert_is_bw: {}",
+                invert_is_bw(&is_bw),
+                (available_moves - *forward_fields) * invert_is_bw(&is_bw)
+            );
+
             if *is_sw == 1 {
                 new_cube = roll(
-                    -available_moves + *forward_fields,
-                    *is_sw != 0,
-                    original_cube,
+                    (available_moves - *forward_fields) * invert_is_bw(&is_bw),
+                    true,
+                    new_cube,
                 );
             } else {
                 new_cube = roll(
-                    available_moves - *forward_fields,
-                    *is_sw != 0,
-                    original_cube,
+                    (available_moves - *forward_fields) * invert_is_bw(&is_bw),
+                    false,
+                    new_cube,
                 );
             }
         }
@@ -253,7 +280,6 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &m
     println!();
     println!();
 
-    //TODO: Implement rolling for the cube
     // Actually placing new cube
     board[new_position[0] as usize][new_position[1] as usize] = new_cube;
     board[original_position[0]][original_position[1]] = zero_cube;
