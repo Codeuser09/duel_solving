@@ -91,7 +91,7 @@ fn get_direction(direction_unit: &i32) -> (i32, i32) {
     if *direction_unit == 3 {
         return (1, 1);
     } else {
-        return (0, -1);
+        return (0, 1);
     }
 }
 
@@ -100,7 +100,11 @@ fn change_direction(turn_direction: &i32, is_sw: &i32, forward_direction: &i32) 
     // 0 = no change
     let mut abs_direction_unit = get_abs_direction_unit(&is_sw, &forward_direction);
 
+    println!("{abs_direction_unit}, {turn_direction}");
+
     abs_direction_unit = (abs_direction_unit + *turn_direction) % 4;
+
+    println!("{abs_direction_unit}");
 
     let new_is_sw = get_direction(&abs_direction_unit).0;
     let new_forward_direction = get_direction(&abs_direction_unit).1;
@@ -168,13 +172,13 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &m
 
             if *is_sw == 1 {
                 new_cube = roll(
-                    -(available_moves * forward_direction - *forward_fields),
+                    -(available_moves - forward_fields.abs()) * forward_direction,
                     true,
                     new_cube
                 );
             } else {
                 new_cube = roll(
-                    available_moves * forward_direction - *forward_fields * forward_direction,
+                    (available_moves  - forward_fields.abs()) * forward_direction,
                     false,
                     new_cube,
                 );
