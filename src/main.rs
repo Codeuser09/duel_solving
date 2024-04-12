@@ -19,7 +19,7 @@ fn main() {
 
     game::display_info(&board, &info_matrix);
 
-    let mut move_array: MoveArray = (17, 0, -1, 2);
+    let mut move_array: MoveArray = (1, 0, 4, 3);
 
     println!();
     println!();
