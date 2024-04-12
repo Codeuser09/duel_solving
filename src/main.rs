@@ -1,11 +1,9 @@
 use cube::MoveArray;
 use game::Board;
 use game::InfoMatrix;
-
 mod cube;
 mod game;
 mod legality_check;
-
 use cube::make_move;
 
 fn main() {
