@@ -73,10 +73,10 @@ fn get_abs_direction_unit(is_sw: &i32, forward_direction: &i32) -> i32 {
     if *is_sw == 0 && *forward_direction == -1 {
         return 2;
     }
-    if *is_sw == 1 && *forward_direction == -1 {
-        return 1;
+    return if *is_sw == 1 && *forward_direction == -1 {
+        1
     } else {
-        return 0;
+        0
     }
 }
 
@@ -88,10 +88,10 @@ fn get_direction(direction_unit: &i32) -> (i32, i32) {
     if *direction_unit == 2 {
         return (0, -1);
     }
-    if *direction_unit == 3 {
-        return (1, 1);
+    return if *direction_unit == 3 {
+        (1, 1)
     } else {
-        return (0, 1);
+        (0, 1)
     }
 }
 
@@ -116,10 +116,10 @@ fn get_smallest_unit(number: &i32) -> i32 {
     if *number < 0 {
         return -1;
     }
-    if *number > 0 {
-        return 1;
+    return if *number > 0 {
+        1
     } else {
-        return 0;
+        0
     }
 }
 
@@ -129,18 +129,39 @@ fn get_smallest_unit(number: &i32) -> i32 {
 
 // abs_direction_units work like turn_directions, but the ff are always positive
 
-pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &mut MoveArray) {
-    let (cube_id, is_sw, forward_fields, turn_direction) = move_array;
-    let original_position = [
-        info_matrix[*cube_id as usize][0] as usize,
-        info_matrix[*cube_id as usize][1] as usize,
-    ];
-    let mut new_position: [i32; 2] =
-        [original_position[0] as i32, original_position[1] as i32] as [i32; 2];
-    let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
-    let original_cube = board[original_position[0]][original_position[1]].clone();
-    let mut new_cube;
-    let mut forward_direction = get_smallest_unit(&forward_fields);
+fn place_cube(board: &mut Board, info_matrix: &mut InfoMatrix, cube_id: &mut i32, original_position: [usize; 2], new_position: &mut [i32; 2], new_cube: &mut Cube) {
+//Setting up our original cube that will be placed on the board
+
+    //Setting zero cube for convenience
+    let zero_cube = [[0; 4]; 2];
+
+    // Actually placing new cube
+    board[new_position[0] as usize][new_position[1] as usize] = *new_cube;
+    board[original_position[0]][original_position[1]] = zero_cube;
+
+    info_matrix[*cube_id as usize][0] = new_position[0];
+    info_matrix[*cube_id as usize][1] = new_position[1];
+}
+
+fn roll_after_dir_change(is_sw: &mut i32, forward_fields: &mut i32, available_moves: i32, mut new_cube: Cube, forward_direction: i32) -> Cube {
+    if *is_sw == 1 {
+        new_cube = roll(
+            -(available_moves - forward_fields.abs()) * forward_direction,
+            true,
+            new_cube
+        );
+    } else {
+        new_cube = roll(
+            (available_moves - forward_fields.abs()) * forward_direction,
+            false,
+            new_cube,
+        );
+    }
+    return new_cube;
+}
+
+fn roll_before_dir_change(is_sw: &mut i32, forward_fields: &mut i32, turn_direction: &mut i32, available_moves: i32, original_cube: [[i32; 4]; 2],  forward_direction: i32) -> Cube {
+    let new_cube;
     if *turn_direction != 0 {
         if *is_sw == 1 {
             new_cube = roll(-*forward_fields, *is_sw != 0, original_cube);
@@ -162,6 +183,26 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &m
             );
         }
     }
+    return new_cube;
+}
+
+pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &mut MoveArray) {
+    let (cube_id, is_sw, forward_fields, turn_direction) = move_array;
+
+    let original_position = [
+        info_matrix[*cube_id as usize][0] as usize,
+        info_matrix[*cube_id as usize][1] as usize,
+    ];
+
+    let mut new_position: [i32; 2] =
+        [original_position[0] as i32, original_position[1] as i32];
+
+    let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
+    let original_cube = board[original_position[0]][original_position[1]].clone();
+    let mut forward_direction = get_smallest_unit(&forward_fields);
+
+    let mut new_cube = roll_before_dir_change(is_sw, forward_fields, turn_direction, available_moves, original_cube, forward_direction);
+
     for i in 0..available_moves {
         if *turn_direction != 0 && i == *forward_fields
             || *turn_direction != 0 && i == -*forward_fields
@@ -170,19 +211,7 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &m
             *is_sw = new_direction.0;
             forward_direction = new_direction.1;
 
-            if *is_sw == 1 {
-                new_cube = roll(
-                    -(available_moves - forward_fields.abs()) * forward_direction,
-                    true,
-                    new_cube
-                );
-            } else {
-                new_cube = roll(
-                    (available_moves  - forward_fields.abs()) * forward_direction,
-                    false,
-                    new_cube,
-                );
-            }
+            new_cube = roll_after_dir_change(is_sw, forward_fields, available_moves, new_cube, forward_direction);
         }
 
         //Setting up the new position
@@ -191,15 +220,5 @@ pub fn make_move(board: &mut Board, info_matrix: &mut InfoMatrix, move_array: &m
         }
     }
 
-    //Setting up our original cube that will be placed on the board
-
-    //Setting zero cube for convenience
-    let zero_cube = [[0; 4]; 2];
-
-    // Actually placing new cube
-    board[new_position[0] as usize][new_position[1] as usize] = new_cube;
-    board[original_position[0]][original_position[1]] = zero_cube;
-
-    info_matrix[*cube_id as usize][0] = new_position[0] as i32;
-    info_matrix[*cube_id as usize][1] = new_position[1] as i32;
+    place_cube(board, info_matrix, cube_id, original_position, &mut new_position, &mut new_cube);
 }
