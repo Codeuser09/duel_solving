@@ -5,6 +5,7 @@ use game::InfoMatrix;
 mod cube;
 mod game;
 mod legality_check;
+
 use cube::make_move;
 
 fn main() {
@@ -29,10 +30,13 @@ fn main() {
 
     for mut move_array in move_array_array.iter_mut() {
         is_white_player  = !is_white_player;
-        println!(
-            "exit status {}",
-            make_move(&mut board, &mut info_matrix, &is_white_player, &mut move_array)
-        );
+        if make_move(&mut board, &mut info_matrix, &is_white_player, &mut move_array) != 0 {
+            println!();
+            println!();
+            println!("Exited with code 1");
+            println!();
+            println!();
+        }
     }
 
     game::display_info(&board, &info_matrix);
