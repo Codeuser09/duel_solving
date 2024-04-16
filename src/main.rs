@@ -17,7 +17,7 @@ fn main() {
 
     game::display_info(&board, &info_matrix);
 
-    let mut move_array: MoveArray = (16, 1, -5, 1);
+    let mut move_array: MoveArray = (16, 1, -5, 0);
 
     println!();
     println!();
@@ -25,7 +25,10 @@ fn main() {
     println!();
     println!("New board:");
 
-    make_move(&mut board, &mut info_matrix, &mut move_array);
+    println!(
+        "exit status {}",
+        make_move(&mut board, &mut info_matrix, &mut move_array)
+    );
 
     game::display_info(&board, &info_matrix);
 }

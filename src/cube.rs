@@ -194,6 +194,15 @@ fn roll_before_dir_change(
     return new_cube;
 }
 
+fn get_maximum_value(is_sw: &i32) -> i32 {
+    if *is_sw == 0 {
+        7
+    } else {
+        8
+    }
+}
+
+//Exit code 1 here means that the move is illegal, while exit code 0 means that it was legal and the board was successfully changed
 pub fn make_move(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
@@ -211,6 +220,7 @@ pub fn make_move(
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
     let original_cube = board[original_position[0]][original_position[1]].clone();
     let mut forward_direction = get_smallest_unit(&forward_fields);
+    let is_white = info_matrix[*cube_id as usize][3];
 
     let mut new_cube = roll_before_dir_change(
         is_sw,
@@ -238,12 +248,30 @@ pub fn make_move(
             );
         }
 
+        for loop_id in 0..info_matrix.len() {
+            let cube = info_matrix[loop_id];
+            if cube[0] == new_position[0] && cube[1] == new_position[1] {
+                if i == available_moves - 1 || i == -available_moves + 1 {
+                    if is_white == cube[3] {
+                        return 1;
+                    } else {
+                        info_matrix.retain(|x| *x != cube);
+                    }
+                } else {
+                    return 1;
+                }
+            }
+            let maximum_value = get_maximum_value(is_sw);
+            if new_position[*is_sw as usize] + forward_direction > maximum_value {
+                return 1;
+            }
+            if *forward_fields >= available_moves {
+                return 1;
+            }
+        }
+
         //Setting up the new position
         new_position[*is_sw as usize] += forward_direction;
-
-        if !is_legal_move(info_matrix, new_position) {
-            return 1;
-        }
     }
 
     place_cube(
@@ -254,6 +282,5 @@ pub fn make_move(
         &mut new_position,
         &mut new_cube,
     );
-
     return 0;
 }
