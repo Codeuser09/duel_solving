@@ -1,3 +1,4 @@
+use std::ptr::write;
 use cube::MoveArray;
 use game::Board;
 use game::InfoMatrix;
@@ -9,26 +10,30 @@ use cube::make_move;
 fn main() {
     let mut board: Board = game::generate_startpos();
     let mut info_matrix: InfoMatrix = game::generate_info_matrix(board);
+    let mut is_white_player = true;
 
     //let move_array: MoveArray = (0, 0, 3, 0);
     //cube::make_move(&mut board, &mut index_matrix, move_array);
 
-    // move_array = [cube_id, is_sideways, forward_fields, turn_direction]
+    // move_array = [cube_id, forward_fields, turn_direction]
 
-    game::display_info(&board, &info_matrix);
+    let mut move_array_array = [
+        (1, 5, 3),
+        (11, -1, 0),
+        (7, 4, 1),
+        (11, -4, 0),
+        (1, 0, 1),
+        (8, 0, 2),
+        (1, 1, 1),
+    ];
 
-    let mut move_array: MoveArray = (16, 1, -5, 0);
-
-    println!();
-    println!();
-    println!();
-    println!();
-    println!("New board:");
-
-    println!(
-        "exit status {}",
-        make_move(&mut board, &mut info_matrix, &mut move_array)
-    );
+    for mut move_array in move_array_array.iter_mut() {
+        is_white_player  = !is_white_player;
+        println!(
+            "exit status {}",
+            make_move(&mut board, &mut info_matrix, &is_white_player, &mut move_array)
+        );
+    }
 
     game::display_info(&board, &info_matrix);
 }

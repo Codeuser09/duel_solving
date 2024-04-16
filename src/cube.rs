@@ -1,9 +1,9 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
-use crate::legality_check::is_legal_move;
+use crate::legality_check::{is_illegal_move, is_oob};
 
 pub type Cube = [[i32; 4]; 2];
-pub type MoveArray = (i32, i32, i32, i32);
+pub type MoveArray = (i32, i32, i32);
 
 fn get_index(index: i32) -> usize {
     let index_wrapped: i32 = index % 4;
@@ -193,22 +193,14 @@ fn roll_before_dir_change(
     }
     return new_cube;
 }
-
-fn get_maximum_value(is_sw: &i32) -> i32 {
-    if *is_sw == 0 {
-        7
-    } else {
-        8
-    }
-}
-
 //Exit code 1 here means that the move is illegal, while exit code 0 means that it was legal and the board was successfully changed
 pub fn make_move(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
+    is_white_player: &bool,
     move_array: &mut MoveArray,
 ) -> i32 {
-    let (cube_id, is_sw, forward_fields, turn_direction) = move_array;
+    let (cube_id, forward_fields, turn_direction) = move_array;
 
     let original_position = [
         info_matrix[*cube_id as usize][0] as usize,
@@ -220,10 +212,14 @@ pub fn make_move(
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
     let original_cube = board[original_position[0]][original_position[1]].clone();
     let mut forward_direction = get_smallest_unit(&forward_fields);
-    let is_white = info_matrix[*cube_id as usize][3];
+    let is_white_cube = info_matrix[*cube_id as usize][3];
+    let mut is_sw = 0;
+    if *turn_direction == 0 && *forward_fields == 0 {
+        forward_direction = 1;
+    }
 
     let mut new_cube = roll_before_dir_change(
-        is_sw,
+        &mut is_sw,
         forward_fields,
         turn_direction,
         available_moves,
@@ -235,12 +231,11 @@ pub fn make_move(
         if *turn_direction != 0 && i == *forward_fields
             || *turn_direction != 0 && i == -*forward_fields
         {
-            let new_direction = change_direction(turn_direction, is_sw, &forward_direction);
-            *is_sw = new_direction.0;
+            let new_direction = change_direction(turn_direction, &mut is_sw, &forward_direction);
+            is_sw = new_direction.0;
             forward_direction = new_direction.1;
-
             new_cube = roll_after_dir_change(
-                is_sw,
+                &mut is_sw,
                 forward_fields,
                 available_moves,
                 new_cube,
@@ -248,30 +243,26 @@ pub fn make_move(
             );
         }
 
-        for loop_id in 0..info_matrix.len() {
-            let cube = info_matrix[loop_id];
-            if cube[0] == new_position[0] && cube[1] == new_position[1] {
-                if i == available_moves - 1 || i == -available_moves + 1 {
-                    if is_white == cube[3] {
-                        return 1;
-                    } else {
-                        info_matrix.retain(|x| *x != cube);
-                    }
-                } else {
-                    return 1;
-                }
-            }
-            let maximum_value = get_maximum_value(is_sw);
-            if new_position[*is_sw as usize] + forward_direction > maximum_value {
-                return 1;
-            }
-            if *forward_fields >= available_moves {
-                return 1;
-            }
+        let is_cube_oob = is_oob(&new_position, &is_sw, &forward_direction, &forward_fields, &available_moves, &turn_direction);
+        if is_cube_oob == 1 {
+            return 1;
         }
 
         //Setting up the new position
-        new_position[*is_sw as usize] += forward_direction;
+        new_position[is_sw as usize] += forward_direction;
+
+        let is_illegal_move = is_illegal_move(
+            info_matrix,
+            &new_position,
+            &available_moves,
+            &i,
+            &is_white_cube,
+            is_white_player
+        );
+
+        if is_illegal_move == 1 {
+            return 1;
+        }
     }
 
     place_cube(
