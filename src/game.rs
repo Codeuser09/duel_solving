@@ -1,5 +1,5 @@
-use crate::cube::display_cube;
-use crate::cube::get_top;
+use crate::libcube::display_cube;
+use crate::libcube::get_top;
 use crate::cube::roll;
 
 use crate::cube::Cube;

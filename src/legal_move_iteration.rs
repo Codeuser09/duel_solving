@@ -1,4 +1,5 @@
-use crate::cube::{display_cube, get_top, MoveArray};
+use crate::cube::{MoveArray};
+use crate::libcube::get_top;
 use crate::game::{Board, InfoMatrix};
 
 // move_array = [cube_id, forward_fields, turn_direction]

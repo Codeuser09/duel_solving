@@ -1,4 +1,3 @@
-use std::ptr::write;
 use cube::MoveArray;
 use game::Board;
 use game::InfoMatrix;
@@ -6,6 +5,7 @@ mod cube;
 mod game;
 mod legality_check;
 mod legal_move_iteration;
+mod libcube;
 
 use cube::make_move;
 use crate::legal_move_iteration::get_legal_moves;
