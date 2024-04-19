@@ -3,7 +3,7 @@ use crate::game::InfoMatrix;
 use crate::legality_check::{is_illegal_move, is_oob};
 
 pub type Cube = [[i32; 4]; 2];
-pub type MoveArray = (i32, i32, i32);
+pub type MoveArray = [i32; 3];
 
 fn get_index(index: i32) -> usize {
     let index_wrapped: i32 = index % 4;
@@ -56,7 +56,7 @@ pub fn display_cube(cube_matrix: &[[i32; 4]; 2]) {
     for axis in cube_matrix {
         print!("[");
         for element in axis {
-            print!("{element}");
+            print!("{}", element);
         }
         print!("]");
     }
@@ -200,7 +200,7 @@ pub fn make_move(
     is_white_player: &bool,
     move_array: &mut MoveArray,
 ) -> i32 {
-    let (cube_id, forward_fields, turn_direction) = move_array;
+    let [cube_id, forward_fields, turn_direction] = move_array;
 
     let original_position = [
         info_matrix[*cube_id as usize][0] as usize,
