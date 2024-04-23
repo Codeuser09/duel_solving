@@ -2,9 +2,9 @@ use crate::game::InfoMatrix;
 
 fn get_maximum_value(is_sw: &i32) -> i32 {
     if *is_sw == 0 {
-        8
-    } else {
         7
+    } else {
+        8
     }
 }
 pub fn is_illegal_move(

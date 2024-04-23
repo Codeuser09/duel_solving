@@ -22,24 +22,24 @@ fn winning_score (info_matrix: &InfoMatrix) -> i32 {
     for cube in info_matrix {
         if cube[2] == 1 {
             if cube[3] == 1 {
-                if cube[0..1] == [0, 4] {
-                    return 1000000000;
+                if cube[0..2] == [0, 4] {
+                    return 1;
                 }
                 is_w_king = true;
             }
             if cube[3] == 0 {
-                if cube[0..1] == [7, 4] {
-                    return -1000000000;
+                if cube[0..2] == [7, 4] {
+                    return -1;
                 }
                 is_b_king = true;
             }
         }
     }
     if !is_w_king {
-        return -1000000000;
+        return -1;
     }
     if !is_b_king {
-        return 1000000000;
+        return 1;
     }
     return 0;
 }
@@ -50,7 +50,7 @@ pub fn evaluate_position (board: &Board, info_matrix: &InfoMatrix) -> i32 {
 
     let mut evaluation = 0;
     evaluation += cube_amount_evaluation(info_matrix);
-    evaluation += winning_score(&info_matrix);
+    evaluation += winning_score(&info_matrix) * 1000000000;;
 
     return evaluation
 }

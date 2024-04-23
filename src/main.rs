@@ -17,7 +17,7 @@ fn main() {
     let mut board: Board = game::generate_startpos();
     let mut info_matrix: InfoMatrix = game::generate_info_matrix(board);
 
-    play_sample_game(&mut board, &mut info_matrix, 2);
+    play_sample_game(&mut board, &mut info_matrix, 4);
     println!("{}", evaluate_position(&board, &info_matrix));
     // println!();
     // println!("Evaluation after these moves: {}", evaluation::evaluate_position(&mut board, &mut info_matrix));
