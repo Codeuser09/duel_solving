@@ -9,9 +9,9 @@ pub type InfoMatrix = Vec<[i32; 4]>;
 
 fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
     let five: Cube = [[5, 3, 2, 4], [5, 1, 2, 6]];
-    let one: Cube = roll(1, true, five);
-    let two: Cube = roll(1, true, one);
-    let six: Cube = roll(1, true, two);
+    let six: Cube = roll(1, true, five);
+    let two: Cube = roll(1, true, six);
+    let one: Cube = roll(1, true, two);
     let king: Cube = [[1; 4]; 2];
     let zero: Cube = [[0; 4]; 2];
 

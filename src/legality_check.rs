@@ -14,7 +14,7 @@ pub fn is_illegal_move(
     cube_id: &i32,
     is_white_cube: &i32,
     is_white_player: &bool
-) -> i32 {
+) -> (i32, i32) {
     for legality_check_loop_id in 0..info_matrix.len() {
         let cube = info_matrix[legality_check_loop_id];
 
@@ -23,23 +23,23 @@ pub fn is_illegal_move(
             if *cube_id == available_moves - 1 || *cube_id == -available_moves + 1 {
                 if *is_white_cube == cube[3] {
                     println!("Cube at this field is the same color");
-                    return 1;
+                    return (1, 0);
                 } else {
                     println!("Removed cube from info matrix");
                     info_matrix.retain(|x| *x != cube);
-                    return 0;
+                    return (0, 1);
                 }
             } else {
                 println!("Not at maximum fields, cannot take cube");
-                return 1;
+                return (1, 0) ;
             }
         }
         if *is_white_cube != *is_white_player as i32 {
             println!("Cannot move cube of the opponent");
-            return 1;
+            return (1, 0);
         }
     }
-    return 0;
+    return (0, 0);
 }
 
 pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, forward_fields: &i32, available_moves: &i32, turn_direction: &i32) -> i32 {

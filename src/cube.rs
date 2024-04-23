@@ -4,7 +4,7 @@ use crate::legality_check::{is_illegal_move, is_oob};
 use crate::libcube::{get_top, get_index, get_smallest_unit, get_direction, get_abs_direction_unit, roll_after_dir_change, roll_before_dir_change, change_direction, place_cube};
 
 pub type Cube = [[i32; 4]; 2];
-pub type MoveArray = [i32; 3];
+pub type MoveArray = [i32; 4];
 
 
 
@@ -59,7 +59,7 @@ pub fn make_move(
     is_white_player: &bool,
     move_array: &mut MoveArray,
 ) -> i32 {
-    let [cube_id, forward_fields, turn_direction] = move_array;
+    let [cube_id, forward_fields, turn_direction, mut is_sw] = move_array;
 
     let original_position = [
         info_matrix[*cube_id as usize][0] as usize,
@@ -72,7 +72,6 @@ pub fn make_move(
     let original_cube = board[original_position[0]][original_position[1]].clone();
     let mut forward_direction = get_smallest_unit(&forward_fields);
     let is_white_cube = info_matrix[*cube_id as usize][3];
-    let mut is_sw = 0;
     if *turn_direction == 0 && *forward_fields == 0 {
         forward_direction = 1;
     }
@@ -110,7 +109,7 @@ pub fn make_move(
         //Setting up the new position
         new_position[is_sw as usize] += forward_direction;
 
-        let is_illegal_move = is_illegal_move(
+        let (is_illegal_move, info_matrix_changed) = is_illegal_move(
             info_matrix,
             &new_position,
             &available_moves,
@@ -124,10 +123,17 @@ pub fn make_move(
         }
     }
 
+    // We need to do this in case cube id is 17 and it's taking a cube in which case it tries to place the cube in an oob spot in the info matrix
+    let mut new_cube_id: i32 = *cube_id;
+
+    if *cube_id == info_matrix.len() as i32 {
+        new_cube_id -= 1;
+    }
+
     place_cube(
         board,
         info_matrix,
-        cube_id,
+        &mut new_cube_id,
         original_position,
         &mut new_position,
         &mut new_cube,
