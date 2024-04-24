@@ -1,5 +1,15 @@
-use crate::cube::{Cube, roll};
+use crate::cube::{Cube, MoveArray, roll};
 use crate::game::{Board, InfoMatrix};
+
+pub fn display_move_array (move_array: &MoveArray) {
+    println!();
+    print!("[");
+    for element in move_array {
+        print!("{element},");
+    }
+    print!("]");
+    println!();
+}
 
 pub fn get_index(index: i32) -> usize {
     let index_wrapped: i32 = index % 4;

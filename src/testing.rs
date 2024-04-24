@@ -75,7 +75,7 @@ pub fn play_sample_game(board: &mut Board, info_matrix: &mut InfoMatrix, example
             &mut *board,
             &mut *info_matrix,
             &is_white_player,
-            *move_array,
+            &move_array,
         ) != 0
         {
             println!();

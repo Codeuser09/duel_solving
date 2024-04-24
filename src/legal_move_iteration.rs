@@ -10,17 +10,22 @@ fn discard_legal_moves(
     possible_moves: &mut Vec<MoveArray>,
     is_white: &bool,
 ) {
-    for mut i in 0..possible_moves.iter().enumerate().len() {
+    let mut i = 0;
+    while i < possible_moves.len() {
         let mut original_board = board.clone();
         let mut original_info_matrix: InfoMatrix = info_matrix.clone();
+        println!("loop_index: {i}");
         if make_move(
             &mut original_board,
             &mut original_info_matrix,
             is_white,
-            possible_moves[i],
+            &possible_moves[i],
         ) == 1
         {
             possible_moves.remove(i);
+        }
+        else {
+            i += 1;
         }
     }
 }
@@ -31,6 +36,7 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: &bool)
     let possible_is_sw = [0, 1];
 
     for (cube_id, cube) in info_matrix.iter().enumerate() {
+        if cube[3] != *is_white as i32 {continue;}
         let cube_position = [cube[0] as usize, cube[1] as usize];
         let available_moves = get_top(&board[cube_position[0]][cube_position[1]]);
         let mut possible_forward_fields = vec![];

@@ -1,10 +1,7 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
 use crate::legality_check::{is_illegal_move, is_oob};
-use crate::libcube::{
-    change_direction, get_abs_direction_unit, get_direction, get_index, get_smallest_unit, get_top,
-    place_cube, roll_after_dir_change, roll_before_dir_change,
-};
+use crate::libcube::{change_direction, display_move_array, get_abs_direction_unit, get_direction, get_index, get_smallest_unit, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
 
 pub type Cube = [[i32; 4]; 2];
 pub type MoveArray = [i32; 4];
@@ -57,13 +54,15 @@ pub fn make_move(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
     is_white_player: &bool,
-    move_array: MoveArray,
+    move_array: &MoveArray,
 ) -> i32 {
     let [cube_id, mut forward_fields, mut turn_direction, mut is_sw] = move_array;
 
+    display_move_array(move_array);
+
     let original_position = [
-        info_matrix[cube_id as usize][0] as usize,
-        info_matrix[cube_id as usize][1] as usize,
+        info_matrix[*cube_id as usize][0] as usize,
+        info_matrix[*cube_id as usize][1] as usize,
     ];
 
     let mut new_position: [i32; 2] = [original_position[0] as i32, original_position[1] as i32];
@@ -71,7 +70,7 @@ pub fn make_move(
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
     let original_cube = board[original_position[0]][original_position[1]].clone();
     let mut forward_direction = get_smallest_unit(&forward_fields);
-    let is_white_cube = info_matrix[cube_id as usize][3];
+    let is_white_cube = info_matrix[*cube_id as usize][3];
     if turn_direction == 0 && forward_fields == 0 {
         forward_direction = 1;
     }
@@ -130,9 +129,9 @@ pub fn make_move(
     }
 
     // We need to do this in case cube id is 17 and it's taking a cube in which case it tries to place the cube in an oob spot in the info matrix
-    let mut new_cube_id: i32 = cube_id;
+    let mut new_cube_id: i32 = *cube_id;
 
-    if cube_id == info_matrix.len() as i32 {
+    if *cube_id == info_matrix.len() as i32 {
         new_cube_id -= 1;
     }
 
