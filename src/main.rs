@@ -1,9 +1,8 @@
-use cube::MoveArray;
 use game::Board;
 use game::InfoMatrix;
-use crate::evaluation::evaluate_position;
-use crate::game::display_info;
-use crate::testing::play_sample_game;
+use evaluation::evaluate_position;
+use testing::play_sample_game;
+use game::{generate_startpos, generate_info_matrix};
 
 mod cube;
 mod game;
@@ -14,8 +13,8 @@ mod evaluation;
 mod testing;
 
 fn main() {
-    let mut board: Board = game::generate_startpos();
-    let mut info_matrix: InfoMatrix = game::generate_info_matrix(board);
+    let mut board: Board = generate_startpos();
+    let mut info_matrix: InfoMatrix = generate_info_matrix(board);
 
     play_sample_game(&mut board, &mut info_matrix, 4);
     println!("{}", evaluate_position(&board, &info_matrix));

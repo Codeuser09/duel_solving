@@ -4,6 +4,8 @@ use crate::game::{Board, InfoMatrix};
 
 // move_array = [cube_id, forward_fields, turn_direction]
 
+fn discard_legal_moves (board: &Board, info_matrix: &InfoMatrix, possible_moves: Vec<MoveArray>) {}
+
 pub fn get_legal_moves (board: &Board, info_matrix: &InfoMatrix) -> Vec<MoveArray> {
     let mut legal_moves = vec![];
     let mut possible_turn_directions = [0, 1, 2, 3];
