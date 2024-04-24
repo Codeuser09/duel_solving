@@ -1,12 +1,13 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
 use crate::legality_check::{is_illegal_move, is_oob};
-use crate::libcube::{get_top, get_index, get_smallest_unit, get_direction, get_abs_direction_unit, roll_after_dir_change, roll_before_dir_change, change_direction, place_cube};
+use crate::libcube::{
+    change_direction, get_abs_direction_unit, get_direction, get_index, get_smallest_unit, get_top,
+    place_cube, roll_after_dir_change, roll_before_dir_change,
+};
 
 pub type Cube = [[i32; 4]; 2];
 pub type MoveArray = [i32; 4];
-
-
 
 pub fn roll(shift: i32, is_sw: bool, original_matrix: Cube) -> Cube {
     /* Example usage:
@@ -45,7 +46,6 @@ pub fn roll(shift: i32, is_sw: bool, original_matrix: Cube) -> Cube {
     ring_matrix
 }
 
-
 // A positive forward_fields indicates a movement towards white (bottom)
 // Turn_direction 0 indicates not to turn at all, while 1 turns the cube to the right of where it's going
 // This continues clockwise
@@ -57,13 +57,13 @@ pub fn make_move(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
     is_white_player: &bool,
-    move_array: &mut MoveArray,
+    move_array: MoveArray,
 ) -> i32 {
-    let [cube_id, forward_fields, turn_direction, mut is_sw] = move_array;
+    let [cube_id, mut forward_fields, mut turn_direction, mut is_sw] = move_array;
 
     let original_position = [
-        info_matrix[*cube_id as usize][0] as usize,
-        info_matrix[*cube_id as usize][1] as usize,
+        info_matrix[cube_id as usize][0] as usize,
+        info_matrix[cube_id as usize][1] as usize,
     ];
 
     let mut new_position: [i32; 2] = [original_position[0] as i32, original_position[1] as i32];
@@ -71,37 +71,43 @@ pub fn make_move(
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
     let original_cube = board[original_position[0]][original_position[1]].clone();
     let mut forward_direction = get_smallest_unit(&forward_fields);
-    let is_white_cube = info_matrix[*cube_id as usize][3];
-    if *turn_direction == 0 && *forward_fields == 0 {
+    let is_white_cube = info_matrix[cube_id as usize][3];
+    if turn_direction == 0 && forward_fields == 0 {
         forward_direction = 1;
     }
 
     let mut new_cube = roll_before_dir_change(
         &mut is_sw,
-        forward_fields,
-        turn_direction,
+        &mut forward_fields,
+        &mut turn_direction,
         available_moves,
         original_cube,
         forward_direction,
     );
 
     for i in 0..available_moves {
-        if *turn_direction != 0 && i == *forward_fields
-            || *turn_direction != 0 && i == -*forward_fields
+        if turn_direction != 0 && i == forward_fields || turn_direction != 0 && i == -forward_fields
         {
-            let new_direction = change_direction(turn_direction, &mut is_sw, &forward_direction);
+            let new_direction = change_direction(&turn_direction, &mut is_sw, &forward_direction);
             is_sw = new_direction.0;
             forward_direction = new_direction.1;
             new_cube = roll_after_dir_change(
                 &mut is_sw,
-                forward_fields,
+                &mut forward_fields,
                 available_moves,
                 new_cube,
                 forward_direction,
             );
         }
 
-        let is_cube_oob = is_oob(&new_position, &is_sw, &forward_direction, &forward_fields, &available_moves, &turn_direction);
+        let is_cube_oob = is_oob(
+            &new_position,
+            &is_sw,
+            &forward_direction,
+            &forward_fields,
+            &available_moves,
+            &turn_direction,
+        );
         if is_cube_oob == 1 {
             return 1;
         }
@@ -115,7 +121,7 @@ pub fn make_move(
             &available_moves,
             &i,
             &is_white_cube,
-            is_white_player
+            is_white_player,
         );
 
         if is_illegal_move == 1 {
@@ -124,9 +130,9 @@ pub fn make_move(
     }
 
     // We need to do this in case cube id is 17 and it's taking a cube in which case it tries to place the cube in an oob spot in the info matrix
-    let mut new_cube_id: i32 = *cube_id;
+    let mut new_cube_id: i32 = cube_id;
 
-    if *cube_id == info_matrix.len() as i32 {
+    if cube_id == info_matrix.len() as i32 {
         new_cube_id -= 1;
     }
 
