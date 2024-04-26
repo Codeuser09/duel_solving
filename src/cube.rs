@@ -1,6 +1,6 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
-use crate::legality_check::{is_illegal_move, is_oob};
+use crate::legality_check::{is_illegal_move, is_legal_operation, is_oob};
 use crate::libcube::{change_direction, display_move_array, get_abs_direction_unit, get_direction, get_index, get_smallest_unit, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
 
 pub type Cube = [[i32; 4]; 2];
@@ -56,7 +56,11 @@ pub fn make_move(
     is_white_player: &bool,
     move_array: &MoveArray,
 ) -> i32 {
-    let [cube_id, mut forward_fields, mut turn_direction, mut is_sw] = move_array;
+    let [cube_id, mut forward_fields, turn_direction, mut is_sw] = move_array;
+
+    if is_legal_operation(&move_array) == 1 {
+        return 1;
+    }
 
     display_move_array(move_array);
 
@@ -71,21 +75,21 @@ pub fn make_move(
     let original_cube = board[original_position[0]][original_position[1]].clone();
     let mut forward_direction = get_smallest_unit(&forward_fields);
     let is_white_cube = info_matrix[*cube_id as usize][3];
-    if turn_direction == 0 && forward_fields == 0 {
+    if *turn_direction == 0 && forward_fields == 0 {
         forward_direction = 1;
     }
 
     let mut new_cube = roll_before_dir_change(
         &mut is_sw,
         &mut forward_fields,
-        &mut turn_direction,
+        turn_direction,
         available_moves,
         original_cube,
         forward_direction,
     );
 
     for i in 0..available_moves {
-        if turn_direction != 0 && i == forward_fields || turn_direction != 0 && i == -forward_fields
+        if *turn_direction != 0 && i == forward_fields || *turn_direction != 0 && i == -forward_fields
         {
             let new_direction = change_direction(&turn_direction, &mut is_sw, &forward_direction);
             is_sw = new_direction.0;
@@ -99,22 +103,21 @@ pub fn make_move(
             );
         }
 
-        let is_cube_oob = is_oob(
+        if is_oob(
             &new_position,
             &is_sw,
             &forward_direction,
             &forward_fields,
             &available_moves,
             &turn_direction,
-        );
-        if is_cube_oob == 1 {
+        ) == 1 {
             return 1;
         }
 
         //Setting up the new position
         new_position[is_sw as usize] += forward_direction;
 
-        let (is_illegal_move, info_matrix_changed) = is_illegal_move(
+        let (is_illegal_move) = is_illegal_move(
             info_matrix,
             &new_position,
             &available_moves,

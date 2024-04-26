@@ -113,7 +113,7 @@ pub fn roll_after_dir_change(
 pub fn roll_before_dir_change(
     is_sw: &mut i32,
     forward_fields: &mut i32,
-    turn_direction: &mut i32,
+    turn_direction: &i32,
     available_moves: i32,
     original_cube: [[i32; 4]; 2],
     forward_direction: i32,

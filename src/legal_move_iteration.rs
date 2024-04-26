@@ -1,6 +1,6 @@
 use crate::cube::{make_move, MoveArray};
-use crate::game::{Board, InfoMatrix};
-use crate::libcube::get_top;
+use crate::game::{Board, display_board, display_info, InfoMatrix};
+use crate::libcube::{display_move_array, get_top};
 
 // move_array = [cube_id, forward_fields, turn_direction]
 
@@ -14,7 +14,6 @@ fn discard_legal_moves(
     while i < possible_moves.len() {
         let mut original_board = board.clone();
         let mut original_info_matrix: InfoMatrix = info_matrix.clone();
-        println!("loop_index: {i}");
         if make_move(
             &mut original_board,
             &mut original_info_matrix,
@@ -32,7 +31,7 @@ fn discard_legal_moves(
 
 pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> Vec<MoveArray> {
     let mut possible_moves = vec![];
-    let possible_turn_directions = [0, 1, 2, 3];
+    let possible_turn_directions = [1, 2, 3];
     let possible_is_sw = [0, 1];
 
     for (cube_id, cube) in info_matrix.iter().enumerate() {
@@ -42,6 +41,9 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: &bool)
         let mut possible_forward_fields = vec![];
         for i in 0..available_moves {
             &possible_forward_fields.push(i);
+            if i != 0 {
+                &possible_forward_fields.push(-i);
+            }
         }
         for possible_turn_direction in possible_turn_directions {
             for possible_forward_field in &possible_forward_fields {
@@ -52,11 +54,49 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: &bool)
                         *possible_forward_field,
                         possible_turn_direction,
                         is_sw,
-                    ])
+                    ]);
+                    display_move_array(&[cube_id as i32, *possible_forward_field, possible_turn_direction, is_sw]);
                 }
             }
         }
     }
     discard_legal_moves(&board, &info_matrix, &mut possible_moves, &is_white);
+    filter_duplicates(&mut possible_moves, &board, &info_matrix, &is_white);
     return possible_moves;
+}
+
+pub fn filter_duplicates (move_arrays: &mut Vec<MoveArray>, board: &Board, info_matrix: &InfoMatrix, is_white: &bool) {
+    for (index, legal_move) in move_arrays.iter().enumerate() {
+        let mut original_board = board.clone();
+        let mut original_info_matrix = info_matrix.clone();
+        make_move(&mut original_board, &mut original_info_matrix, is_white, legal_move);
+        for (sub_index, possible_duplicate) in move_arrays.iter().enumerate() {
+            if index == sub_index {
+                continue;
+            }
+            let mut duplicate_board = board.clone();
+            let mut duplicate_info_matrix = info_matrix.clone();
+            make_move(&mut duplicate_board, &mut duplicate_info_matrix, is_white, possible_duplicate);
+            if original_board == duplicate_board && original_info_matrix == duplicate_info_matrix {
+                println!("Found duplicate");
+                println!();
+                println!("Original: ");
+                display_info(&original_board, &original_info_matrix);
+                println!();
+                println!("Move array: ");
+                display_move_array(legal_move);
+                println!("Duplicate: ");
+                display_info(&duplicate_board, &duplicate_info_matrix);
+                println!();
+                println!("Move array: ");
+                display_move_array(possible_duplicate);
+                println!();
+                println!();
+                panic!("Found duplicate move");
+                return;
+            }
+        }
+    }
+    println!("Found no duplicates");
+    return;
 }

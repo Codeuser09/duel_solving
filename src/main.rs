@@ -4,6 +4,9 @@ use game::InfoMatrix;
 use game::{generate_info_matrix, generate_startpos};
 use testing::play_sample_game;
 use testing::print_legal_moves;
+use crate::cube::make_move;
+use crate::game::display_info;
+use crate::legal_move_iteration::filter_duplicates;
 
 mod cube;
 mod evaluation;
@@ -23,4 +26,5 @@ fn main() {
     // println!("Evaluation after these moves: {}", evaluation::evaluate_position(&mut board, &mut info_matrix));
     // display_info(&board, &info_matrix);
     print_legal_moves(board, info_matrix, &true);
+    // filter_duplicates(&mut vec![[9, -1, 1, 0], [9, -1, 1, 0]], &board, &info_matrix, &true);
 }

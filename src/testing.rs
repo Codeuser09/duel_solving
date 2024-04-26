@@ -1,14 +1,19 @@
 use crate::cube::make_move;
 use crate::game::{display_info, Board, InfoMatrix};
 use crate::legal_move_iteration::get_legal_moves;
+use crate::libcube::display_move_array;
 
 pub fn print_legal_moves(board: Board, info_matrix: InfoMatrix, is_white: &bool) {
     let legal_moves = get_legal_moves(&board, &info_matrix, is_white);
+    println!();
+    println!();
+    println!();
+    println!();
+    println!("Legal moves: ");
+
+
     for legal_move in legal_moves {
-        for element in legal_move {
-            print!("{}", element);
-        }
-        println!();
+        display_move_array(&legal_move);
     }
 }
 
