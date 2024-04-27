@@ -1,5 +1,6 @@
 use crate::cube::MoveArray;
 use crate::game::InfoMatrix;
+use crate::libcube::display_move_array;
 
 fn get_maximum_value(is_sw: &i32) -> i32 {
     if *is_sw == 0 {
@@ -53,7 +54,6 @@ pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, for
         println!("Too many forward fields or too little forward fields, ff: {}, am: {}", forward_fields, available_moves);
         return 1;
     }
-
     return 0;
 }
 

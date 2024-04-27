@@ -62,7 +62,7 @@ pub fn make_move(
         return 1;
     }
 
-    display_move_array(move_array);
+    // display_move_array(move_array);
 
     let original_position = [
         info_matrix[*cube_id as usize][0] as usize,

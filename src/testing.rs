@@ -3,8 +3,8 @@ use crate::game::{display_info, Board, InfoMatrix};
 use crate::legal_move_iteration::get_legal_moves;
 use crate::libcube::display_move_array;
 
-pub fn print_legal_moves(board: Board, info_matrix: InfoMatrix, is_white: &bool) {
-    let legal_moves = get_legal_moves(&board, &info_matrix, is_white);
+pub fn print_legal_moves(board: &mut Board, info_matrix: &mut InfoMatrix, is_white: &bool) {
+    let legal_moves = get_legal_moves(&board, &info_matrix, *is_white);
     println!();
     println!();
     println!();
