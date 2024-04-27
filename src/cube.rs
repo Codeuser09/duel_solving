@@ -78,6 +78,8 @@ pub fn make_move(
     if *turn_direction == 0 && forward_fields == 0 {
         forward_direction = 1;
     }
+    let board_before = board.clone();
+    let cube_before = board[info_matrix[*cube_id as usize][0] as usize][info_matrix[*cube_id as usize][1] as usize].clone();
 
     let mut new_cube = roll_before_dir_change(
         &mut is_sw,
@@ -146,5 +148,11 @@ pub fn make_move(
         &mut new_position,
         &mut new_cube,
     );
+
+    if board_before == *board {
+        println!("Board didn't change");
+        return 1;
+    }
+
     return 0;
 }

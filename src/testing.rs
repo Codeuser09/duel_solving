@@ -49,6 +49,7 @@ pub fn play_sample_game(board: &mut Board, info_matrix: &mut InfoMatrix, example
             [13, 0, 2, 0],
             [4, 0, 1, 0],
             [13, 0, 2, 0],
+            // [0, -1, 1, 0]
         ];
     } else {
         move_array_array = vec![

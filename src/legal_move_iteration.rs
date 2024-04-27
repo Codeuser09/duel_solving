@@ -78,13 +78,16 @@ pub fn filter_duplicates (move_arrays: &mut Vec<MoveArray>, board: &Board, info_
             let mut duplicate_info_matrix = info_matrix.clone();
             make_move(&mut duplicate_board, &mut duplicate_info_matrix, is_white, possible_duplicate);
             if original_board == duplicate_board && original_info_matrix == duplicate_info_matrix {
-                println!("Found duplicate");
                 println!();
+                println!();
+                println!("Found duplicate");
                 println!("Original: ");
                 display_info(&original_board, &original_info_matrix);
                 println!();
                 println!("Move array: ");
                 display_move_array(legal_move);
+                println!();
+                println!();
                 println!("Duplicate: ");
                 display_info(&duplicate_board, &duplicate_info_matrix);
                 println!();
@@ -92,7 +95,7 @@ pub fn filter_duplicates (move_arrays: &mut Vec<MoveArray>, board: &Board, info_
                 display_move_array(possible_duplicate);
                 println!();
                 println!();
-                panic!("Found duplicate move");
+                move_arrays.remove(index);
                 return;
             }
         }
