@@ -2,6 +2,7 @@ use evaluation::evaluate_position;
 use game::Board;
 use game::InfoMatrix;
 use game::{generate_info_matrix, generate_startpos};
+use crate::minimax::minimax;
 use testing::play_sample_game;
 use testing::print_legal_moves;
 use crate::cube::make_move;
@@ -26,10 +27,11 @@ fn main() {
     // println!();
     // println!("Evaluation after these moves: {}", evaluate_position(&mut board, &mut info_matrix));
     // display_info(&board, &info_matrix);
-    print_legal_moves(&mut board, &mut info_matrix, &false);
-    print_legal_moves(&mut board, &mut info_matrix, &true);
+    // print_legal_moves(&mut board, &mut info_matrix, &false);
+    // print_legal_moves(&mut board, &mut info_matrix, &true);
     // filter_duplicates(&mut vec![[9, -1, 1, 0], [9, -1, 1, 0]], &board, &info_matrix, &true);
     // let mut move_1 = [1, 0, 0, 0];
     // make_move(&mut board, &mut info_matrix, &false, &move_1);
     // display_info(&board, &info_matrix);
+    minimax(&board, &info_matrix, -1000000000, 1000000000, 100, true);
 }
