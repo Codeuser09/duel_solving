@@ -1,5 +1,7 @@
+use std::io;
+use std::io::stdin;
 use crate::cube::make_move;
-use crate::game::{display_info, Board, InfoMatrix};
+use crate::game::{display_info, Board, InfoMatrix, display_info_matrix};
 use crate::legal_move_iteration::get_legal_moves;
 use crate::libcube::display_move_array;
 
@@ -94,4 +96,21 @@ pub fn play_sample_game(board: &mut Board, info_matrix: &mut InfoMatrix, example
     }
 
     crate::game::display_info(&board, &info_matrix);
+}
+
+pub fn get_input () {
+    let mut coord_array: [[String; 2];2] = [[String::new(); 2];2];
+
+    for coord in 0..coord_array.len() {
+        for element in 0..coord_array[coord].len() {
+            io::stdin()
+                .read_line(&mut coord_array[coord][element])
+                .expect("Failed to read line");
+
+            coord_array[coord][element] = match coord_array[coord][element].trim().parse() {
+                Ok(num) => num,
+                Err(e) => println!("{e}"),
+            };
+        }
+    }
 }

@@ -1,13 +1,15 @@
+use std::io::stdin;
 use evaluation::evaluate_position;
 use game::Board;
 use game::InfoMatrix;
 use game::{generate_info_matrix, generate_startpos};
 use crate::minimax::minimax;
-use testing::play_sample_game;
-use testing::print_legal_moves;
-use crate::cube::make_move;
-use crate::game::display_info;
+use interaction::play_sample_game;
+use interaction::print_legal_moves;
+use crate::cube::{make_move, MoveArray};
+use crate::game::{display_info, display_info_matrix};
 use crate::legal_move_iteration::{filter_duplicates, get_legal_moves};
+use crate::evaluation::is_won;
 
 mod cube;
 mod evaluation;
@@ -15,12 +17,13 @@ mod game;
 mod legal_move_iteration;
 mod legality_check;
 mod libcube;
-mod testing;
+mod interaction;
 mod minimax;
 
 fn main() {
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
+    let mut is_white = true;
 
     // play_sample_game(&mut board, &mut info_matrix, 3);
     // println!("{}", evaluate_position(&board, &info_matrix));
@@ -33,5 +36,14 @@ fn main() {
     // let mut move_1 = [1, 0, 0, 0];
     // make_move(&mut board, &mut info_matrix, &false, &move_1);
     // display_info(&board, &info_matrix);
-    minimax(&board, &info_matrix, -1000000000, 1000000000, 100, true);
+
+    while is_won(&info_matrix) == 0 {
+        if is_white = true {
+            let bot_move: MoveArray = minimax(&board, &info_matrix, -1000000000, 1000000000, 100, true)[1];
+            make_move(&mut board, &mut info_matrix, &true, &bot_move);
+        }
+        else {
+
+        }
+    }
 }
