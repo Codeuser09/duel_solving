@@ -61,30 +61,35 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) 
             }
         }
     }
-    println!("Possible legal moves: {}", possible_moves.len());
+    // println!("Possible legal moves: {}", possible_moves.len());
     discard_legal_moves(&board, &info_matrix, &mut possible_moves, &is_white);
     let non_duped_moves = filter_duplicates(possible_moves, &board, &info_matrix, &is_white);
     return non_duped_moves;
 }
-pub fn filter_duplicates (move_arrays: Vec<MoveArray>, board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> Vec<MoveArray> {
-    let mut new_board_array: Vec<Board> = vec![];
-    for i in 0..move_arrays.len() {
-        let mut board_clone = board.clone();
-        let mut info_matrix_clone = info_matrix.clone();
-        make_move(&mut board_clone, &mut info_matrix_clone, &is_white, &move_arrays[i]);
-        new_board_array.push(board_clone);
-    }
+pub fn filter_duplicates (legal_moves: Vec<MoveArray>, board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> Vec<MoveArray> {
+    let mut new_board_array: Vec<Board> = get_possible_boards(&board, &info_matrix, &is_white, &legal_moves);
 
     let mut set = HashSet::new();
     let mut non_duped_moves = Vec::new();
 
     for (index, item) in new_board_array.iter().enumerate() {
         if set.insert(item.clone()) {
-            non_duped_moves.push(move_arrays[index]);
+            non_duped_moves.push(legal_moves[index]);
         }
         else {
-            println!("Filtered duplicate")
+            // println!("Filtered duplicate")
         }
     }
     return non_duped_moves;
+}
+
+pub fn get_possible_boards (board: &Board, info_matrix: &InfoMatrix, is_white: &bool, legal_moves: &Vec<MoveArray>) -> Vec<Board> {
+    let mut possible_boards: Vec<Board> = vec![];
+    for i in 0..legal_moves.len() {
+        let mut board_clone = board.clone();
+        let mut info_matrix_clone = info_matrix.clone();
+        make_move(&mut board_clone, &mut info_matrix_clone, &is_white, &legal_moves[i]);
+        possible_boards.push(board_clone);
+    }
+    return possible_boards;
 }

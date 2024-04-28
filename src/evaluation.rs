@@ -1,5 +1,5 @@
 use log::info;
-use crate::game::{Board, InfoMatrix};
+use crate::game::{Board, display_board, InfoMatrix};
 use crate::legal_move_iteration::get_legal_moves;
 
 fn cube_amount_evaluation (info_matrix: &InfoMatrix) -> i32 {
@@ -71,7 +71,7 @@ fn winning_square_distance (info_matrix: &InfoMatrix) -> f32 {
             }
         }
     }
-    println!("w_distance: {}, b_distance: {}, Winning square distance eval: {}", w_distance, b_distance, w_distance - b_distance);
+    // println!("w_distance: {}, b_distance: {}, Winning square distance eval: {}", w_distance, b_distance, w_distance - b_distance);
     return w_distance - b_distance;
 }
 
@@ -81,10 +81,10 @@ pub fn evaluate_position (board: &Board, info_matrix: &InfoMatrix) -> i32 {
 
     let mut evaluation = 0;
     evaluation += cube_amount_evaluation(info_matrix);
-    evaluation += is_won(&info_matrix) * 1000000000;
-    evaluation = evaluation + get_legal_moves(&board, &info_matrix, true).len() as i32 - get_legal_moves(&board, &info_matrix, false).len() as i32;
-    println!("White legal moves: {}, black legal moves: {}, Legal move eval: {}",  get_legal_moves(&board, &info_matrix, true).len() as i32, get_legal_moves(&board, &info_matrix, false).len() as i32, get_legal_moves(&board, &info_matrix, true).len() as i32 - get_legal_moves(&board, &info_matrix, false).len() as i32);
-    evaluation += winning_square_distance(&info_matrix) as i32;
+    evaluation += is_won(&info_matrix) * 214748364;
+    evaluation = evaluation + (get_legal_moves(&board, &info_matrix, true).len() as i32 - get_legal_moves(&board, &info_matrix, false).len() as i32) / 100;
+    // evaluation += winning_square_distance(&info_matrix) as i32;
+    // println!("Winning square distance: {}", winning_square_distance(&info_matrix));
 
     return evaluation
 }
