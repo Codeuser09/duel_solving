@@ -1,6 +1,5 @@
 use crate::cube::MoveArray;
 use crate::game::InfoMatrix;
-use crate::libcube::display_move_array;
 
 fn get_maximum_value(is_sw: &i32) -> i32 {
     if *is_sw == 0 {
@@ -44,7 +43,7 @@ pub fn is_illegal_move(
     return 0;
 }
 
-pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, forward_fields: &i32, available_moves: &i32, turn_direction: &i32) -> i32 {
+pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, forward_fields: &i32, available_moves: &i32) -> i32 {
     let maximum_value = get_maximum_value(is_sw);
     if new_position[*is_sw as usize] + forward_direction > maximum_value || new_position[*is_sw as usize] + forward_direction < 0 {
         // println!("Out of bounds, forward_direction: {forward_direction}, is_sideways: {is_sw}");
@@ -58,12 +57,12 @@ pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, for
 }
 
 pub fn is_legal_operation (move_array: &MoveArray) -> i32 {
-    let [cube_id, mut forward_fields, turn_direction, mut is_sw] = move_array;
-    if *turn_direction == 2 && forward_fields != 0 || *turn_direction > 3 || *turn_direction < 0 {
+    let [_cube_id, forward_fields, turn_direction, is_sw] = move_array;
+    if *turn_direction == 2 && *forward_fields != 0 || *turn_direction > 3 || *turn_direction < 0 {
         // println!("Illegal turn direction");
         return 1;
     }
-    if *turn_direction == 2 && is_sw == 1 {
+    if *turn_direction == 2 && *is_sw == 1 {
         // println!("Illegal combo");
         return 1;
     }

@@ -1,6 +1,6 @@
-use log::info;
-use crate::game::{Board, display_board, InfoMatrix};
+use crate::game::{Board, InfoMatrix};
 use crate::legal_move_iteration::get_legal_moves;
+use crate::libcube::get_smallest_unit;
 
 fn cube_amount_evaluation (info_matrix: &InfoMatrix) -> i32 {
     let mut w_cube_amount = 0;
@@ -59,7 +59,7 @@ fn winning_square_distance (info_matrix: &InfoMatrix) -> f32 {
     let mut w_distance: f32= 7.0;
     let mut b_distance: f32= 7.0;
 
-        for (i, cube) in info_matrix.iter().enumerate() {
+        for cube in info_matrix {
         if cube[2] == 1 {
             if cube[3] == 1 {
                 let w_king_square = [cube[0], cube[1]];
@@ -72,7 +72,8 @@ fn winning_square_distance (info_matrix: &InfoMatrix) -> f32 {
         }
     }
     // println!("w_distance: {}, b_distance: {}, Winning square distance eval: {}", w_distance, b_distance, w_distance - b_distance);
-    return w_distance - b_distance;
+    let winning_square_distance = b_distance - w_distance;
+    return winning_square_distance.powf(winning_square_distance) * get_smallest_unit(&(winning_square_distance as i32)) as f32 //Inverted because a smaller distance is good
 }
 
 pub fn evaluate_position (board: &Board, info_matrix: &InfoMatrix) -> i32 {
@@ -83,7 +84,7 @@ pub fn evaluate_position (board: &Board, info_matrix: &InfoMatrix) -> i32 {
     evaluation += cube_amount_evaluation(info_matrix);
     evaluation += is_won(&info_matrix) * 214748364;
     evaluation = evaluation + (get_legal_moves(&board, &info_matrix, true).len() as i32 - get_legal_moves(&board, &info_matrix, false).len() as i32) / 100;
-    // evaluation += winning_square_distance(&info_matrix) as i32;
+    evaluation += winning_square_distance(&info_matrix) as i32;
     // println!("Winning square distance: {}", winning_square_distance(&info_matrix));
 
     return evaluation

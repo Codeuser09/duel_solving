@@ -1,6 +1,6 @@
 use crate::cube::{make_move, MoveArray};
-use crate::game::{Board, display_board, display_info, InfoMatrix};
-use crate::libcube::{display_move_array, get_top};
+use crate::game::{Board, InfoMatrix};
+use crate::libcube::{get_top};
 use std::collections::HashSet;
 
 // move_array = [cube_id, forward_fields, turn_direction]
@@ -41,9 +41,9 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) 
         let available_moves = get_top(&board[cube_position[0]][cube_position[1]]);
         let mut possible_forward_fields = vec![];
         for i in 0..available_moves {
-            &possible_forward_fields.push(i);
+            possible_forward_fields.push(i);
             if i != 0 {
-                &possible_forward_fields.push(-i);
+                possible_forward_fields.push(-i);
             }
         }
         for possible_turn_direction in possible_turn_directions {
@@ -67,7 +67,7 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) 
     return non_duped_moves;
 }
 pub fn filter_duplicates (legal_moves: Vec<MoveArray>, board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> Vec<MoveArray> {
-    let mut new_board_array: Vec<Board> = get_possible_boards(&board, &info_matrix, &is_white, &legal_moves);
+    let new_board_array: Vec<Board> = get_possible_boards(&board, &info_matrix, &is_white, &legal_moves);
 
     let mut set = HashSet::new();
     let mut non_duped_moves = Vec::new();

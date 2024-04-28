@@ -1,91 +1,32 @@
 use std::io;
-use std::io::stdin;
 use crate::cube::{make_move, MoveArray, roll};
-use crate::game::{display_info, Board, InfoMatrix, display_info_matrix, display_board, generate_startpos, generate_info_matrix};
+use crate::game::{_display_info, Board, InfoMatrix, _display_board, generate_startpos, generate_info_matrix, _display_tops};
 use crate::legal_move_iteration::{get_legal_moves, get_possible_boards};
 use crate::libcube::display_move_array;
-use crate::libcube::display_cube;
 use dialoguer::Confirm;
 use crate::evaluation::{evaluate_position, is_won};
 use crate::minimax::minimax;
 
-pub fn print_legal_moves(board: &mut Board, info_matrix: &mut InfoMatrix, is_white: &bool) {
-    let legal_moves = get_legal_moves(&board, &info_matrix, *is_white);
-    println!();
-    println!();
-    println!();
-    println!();
-    println!("Legal moves: ");
+pub fn _play_sample_game(example_game: i32) {
+    let mut board: Board = generate_startpos();
+    let mut info_matrix: InfoMatrix = generate_info_matrix(board);
 
-
-    for legal_move in legal_moves {
-        display_move_array(&legal_move);
-    }
-}
-
-pub fn play_sample_game(board: &mut Board, info_matrix: &mut InfoMatrix, example_game: i32) {
-    let is_white_player = true;
     let mut is_white_player = true;
     //move_array = [cube_id, forward_fields, turn_direction, is_sideways];
 
-    let mut move_array_array = vec![];
+    let mut move_array_array ;
 
     if example_game == 1 {
         move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [17, -3, 1, 1]];
     }
-    if example_game == 2 {
+    else {
         move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [16, 0, 2, 0], [0, 3, 1, 1]];
     }
-    if example_game == 3 {
-        move_array_array = vec![
-            [13, 0, 2, 0],
-            [0, 4, 0, 0],
-            [10, 0, 2, 0],
-            [5, 1, 1, 0],
-            [16, 0, 2, 0],
-            [3, 1, 3, 0],
-            [13, 0, 2, 0],
-            [4, 0, 0, 0],
-            [13, 0, 2, 0],
-            [4, 0, 0, 0],
-            [13, 0, 2, 0],
-            [4, 0, 1, 0],
-            [13, 0, 2, 0],
-            [4, 0, 1, 0],
-            [13, 0, 2, 0],
-            [4, 0, 1, 0],
-            [13, 0, 2, 0],
-            // [0, -1, 1, 0]
-        ];
-    } else {
-        move_array_array = vec![
-            [13, 0, 2, 0],
-            [0, 4, 0, 0],
-            [10, 0, 2, 0],
-            [5, 1, 1, 0],
-            [16, 0, 2, 0],
-            [3, 1, 3, 0],
-            [13, 0, 2, 0],
-            [4, 0, 0, 0],
-            [13, 0, 2, 0],
-            [4, 0, 0, 0],
-            [13, 0, 3, 0],
-            [4, 0, 0, 0],
-            [13, 0, 3, 0],
-            [4, 0, 0, 0],
-            [13, 0, 3, 0],
-            [4, 0, 0, 0],
-            [13, 0, 3, 0],
-            [4, 0, 0, 0],
-            [13, 0, 3, 0],
-            [4, 0, 0, 0],
-        ];
-    }
 
-    for mut move_array in move_array_array.iter_mut() {
+    for move_array in move_array_array.iter_mut() {
         if make_move(
-            &mut *board,
-            &mut *info_matrix,
+            &mut board,
+            &mut info_matrix,
             &is_white_player,
             &move_array,
         ) != 0
@@ -97,20 +38,17 @@ pub fn play_sample_game(board: &mut Board, info_matrix: &mut InfoMatrix, example
             println!();
         }
         is_white_player = !is_white_player;
+        _display_info(&board, &info_matrix);
+        println!();
+        println!("Eval: {}", evaluate_position(&board, &info_matrix));
     }
 
-    display_info(&board, &info_matrix);
+    _display_info(&board, &info_matrix);
 }
 
-fn convert_input (human_input: &[[u32; 2];2], info_matrix: &InfoMatrix, board: &Board, is_white: &bool) -> MoveArray {
-    let mut chosen_cube_id = 100;
+fn _convert_input (human_input: &[[u32; 2];2], info_matrix: &InfoMatrix, board: &Board, is_white: &bool) -> MoveArray {
     let legal_moves = &get_legal_moves(&board, &info_matrix, *is_white);
     let possible_boards = get_possible_boards(&board, &info_matrix, is_white, legal_moves);
-    for (cube_id, cube) in info_matrix.iter().enumerate() {
-        if cube[0] == human_input[0][0] as i32 && cube[1] == human_input[0][1] as i32 {
-            chosen_cube_id = cube_id as i32;
-        }
-    }
 
     for is_sw in 0..2 {
         for i in 1..4 {
@@ -126,17 +64,16 @@ fn convert_input (human_input: &[[u32; 2];2], info_matrix: &InfoMatrix, board: &
     return [100, 100, 100, 100];
 }
 
-pub fn get_input (board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveArray{
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    let mut coord_array: [[String; 2]; 2] = [[String::new(), String::new()], [String::new(), String::new()]];
-    let mut coord_array_int: [[u32; 2];2] = [[10; 2]; 2];
-    let mut is_input_correct = true;
-
+pub fn _get_input (board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveArray{
     loop {
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        let mut coord_array: [[String; 2]; 2] = [[String::new(), String::new()], [String::new(), String::new()]];
+        let mut coord_array_int: [[u32; 2];2] = [[10; 2]; 2];
+        let mut is_input_correct = true;
         loop {
             for coord in 0..coord_array.len() {
                 for element in 0..coord_array[coord].len() {
-                    display_board(board);
+                    _display_tops(&board);
 
                     println!("Please input the {} that the {} (Starting with index 0 up to {})",
                              if element == 0 { "Row" } else { "Column" },
@@ -150,7 +87,7 @@ pub fn get_input (board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> M
 
                     coord_array_int[coord][element] = match coord_array[coord][element].trim().parse() {
                         Ok(num) => num,
-                        Err(e) => continue,
+                        Err(_) => continue,
                     };
                     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
                 }
@@ -158,14 +95,14 @@ pub fn get_input (board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> M
             for coord in coord_array_int {
                 for element in coord {
                     if element == 10 {
-                        is_input_correct == false;
+                        is_input_correct = false;
                     }
                 }
             }
             if is_input_correct == true { break }
         }
 
-        let real_move = convert_input(&coord_array_int, &info_matrix, &board, &is_white);
+        let real_move = _convert_input(&coord_array_int, &info_matrix, &board, &is_white);
         if real_move == [100, 100, 100, 100] {
             println!("Illegal choice, please choose another move");
             continue
@@ -174,10 +111,9 @@ pub fn get_input (board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> M
         let mut board_clone = board.clone();
         let mut info_matrix_clone = info_matrix.clone();
         make_move(&mut board_clone, &mut info_matrix_clone, &is_white, &real_move);
-        display_board(&board_clone);
-        println!("This would be the board after your move, is it correct (Y/N)");
+        _display_tops(&board_clone);
         let confirmation = Confirm::new()
-            .with_prompt("Do you want to continue?")
+            .with_prompt("This would be the board after your move, is it correct?")
             .interact()
             .unwrap();
 
@@ -190,58 +126,66 @@ pub fn get_input (board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> M
     }
 }
 
-pub fn play_bvh_game () {
+pub fn _play_bvh_game () {
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
     while is_won(&info_matrix) == 0 {
         if is_white == true {
-            let bot_move= minimax(&board, &info_matrix, -1000000000, 1000000000, 3, true).0;
+            let bot_move= minimax(&board, &info_matrix, 5, 1000000000, 1000000000, true).0;
             make_move(&mut board, &mut info_matrix, &true, &bot_move);
         }
         else {
-            let player_move = get_input(&board, &info_matrix, &false);
+            let player_move = _get_input(&board, &info_matrix, &false);
             make_move(&mut board, &mut info_matrix, &false, &player_move);
         }
         is_white = !is_white;
     }
 }
 
-pub fn play_bvb_game () {
+pub fn _play_bvb_game () {
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
     while is_won(&info_matrix) == 0 {
-        println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
+        // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
+        print!("Is it white to move?: {}, ", is_white);
         if is_white == true {
-            let bot_move = minimax(&board, &info_matrix, -1000000000, 1000000000, 3, true).0;
-            make_move(&mut board, &mut info_matrix, &true, &bot_move);
+            let bot_move = minimax(&board, &info_matrix, 5, 1000000000, 1000000000, true);
+            make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
+            print!("Bot evaluation: {}, ", bot_move.1);
+            display_move_array(&bot_move.0);
         } else {
-            let bot_move = minimax(&board, &info_matrix, -1000000000, 1000000000, 3, false).0;
-            make_move(&mut board, &mut info_matrix, &false, &bot_move);
+            let bot_move = minimax(&board, &info_matrix, 5, 1000000000, 1000000000,false);
+            make_move(&mut board, &mut info_matrix, &false, &bot_move.0);
+            print!("Bot evaluation: {}, ", bot_move.1);
+            display_move_array(&bot_move.0);
         }
+        println!("Static evaluation: {}", evaluate_position(&board, &info_matrix));
         is_white = !is_white;
-        display_board(&board);
+        _display_board(&board);
+        println!();
     }
 }
 
-pub fn play_hvh_game () {
+pub fn _play_hvh_game () {
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
     while is_won(&info_matrix) == 0 {
         if is_white == true {
-            let player_move = get_input(&board, &info_matrix, &true);
+            let player_move = _get_input(&board, &info_matrix, &true);
             make_move(&mut board, &mut info_matrix, &true, &player_move);
         }
         else {
-            let player_move = get_input(&board, &info_matrix, &false);
+            let player_move = _get_input(&board, &info_matrix, &false);
             make_move(&mut board, &mut info_matrix, &false, &player_move);
         }
-        println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
+        // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
         is_white = !is_white;
+        println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
     }
 }
