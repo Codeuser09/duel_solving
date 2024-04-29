@@ -133,8 +133,8 @@ pub fn _play_bvh_game () {
 
     while is_won(&info_matrix) == 0 {
         if is_white == true {
-            let bot_move= minimax(&board, &info_matrix, 5, 1000000000, 1000000000, true).0;
-            make_move(&mut board, &mut info_matrix, &true, &bot_move);
+            let bot_move = minimax(&board, &info_matrix, 3, f64::NEG_INFINITY, f64::INFINITY, true);
+            make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
         }
         else {
             let player_move = _get_input(&board, &info_matrix, &false);
@@ -153,12 +153,12 @@ pub fn _play_bvb_game () {
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
         print!("Is it white to move?: {}, ", is_white);
         if is_white == true {
-            let bot_move = minimax(&board, &info_matrix, 5, 1000000000, 1000000000, true);
+            let bot_move = minimax(&board, &info_matrix, 3, f64::NEG_INFINITY, f64::INFINITY, true);
             make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
             print!("Bot evaluation: {}, ", bot_move.1);
             display_move_array(&bot_move.0);
         } else {
-            let bot_move = minimax(&board, &info_matrix, 5, 1000000000, 1000000000,false);
+            let bot_move = minimax(&board, &info_matrix, 3, f64::NEG_INFINITY, f64::INFINITY, false);
             make_move(&mut board, &mut info_matrix, &false, &bot_move.0);
             print!("Bot evaluation: {}, ", bot_move.1);
             display_move_array(&bot_move.0);
