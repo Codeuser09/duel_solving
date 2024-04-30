@@ -107,7 +107,5 @@ pub fn evaluate_position (board: &Board, info_matrix: &InfoMatrix) -> f64 {
     evaluation += legal_move_total(&board, &info_matrix);
     // evaluation += top_value_total(&board, &info_matrix);
 
-    println!("Top value total: {}", top_value_total(&board, &info_matrix));
-
     return evaluation
 }

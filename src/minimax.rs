@@ -22,46 +22,28 @@ pub fn minimax(
             return ([0, 0, 0, 0], evaluate_position(&board, &info_matrix));
         }
     }
+    let mut best_eval= if is_white {f64::NEG_INFINITY} else {f64::INFINITY};
+    let mut best_move = get_legal_moves(&board, &info_matrix, is_white)[0];
 
-    return if is_white {
-        let mut max_eval = f64::NEG_INFINITY;
-        let mut best_move = get_legal_moves(&board, &info_matrix, is_white)[0];
+    for legal_move in get_legal_moves(&board, &info_matrix, is_white) {
+        let mut new_board = board.clone();
+        let mut new_info_matrix = info_matrix.clone();
+        make_move(&mut new_board, &mut new_info_matrix, &is_white, &legal_move);
+        let eval = minimax(&new_board, &new_info_matrix, depth - 1, alpha, beta, !is_white).1;
 
-        for legal_move in get_legal_moves(&board, &info_matrix, is_white) {
-            let mut new_board = board.clone();
-            let mut new_info_matrix = info_matrix.clone();
-            make_move(&mut new_board, &mut new_info_matrix, &is_white, &legal_move);
-            let eval = minimax(&new_board, &new_info_matrix, depth - 1, alpha, beta, false).1;
-
-            if eval > max_eval {
-                max_eval = eval;
-                best_move = legal_move;
-            }
+        if eval > best_eval && is_white || eval < best_eval && !is_white {
+            best_eval = eval;
+            best_move = legal_move;
+        }
+        if is_white {
             alpha = alpha.max(eval);
-            if beta <= alpha {
-                break;
-            }
         }
-        (best_move, max_eval)
-    } else {
-        let mut min_eval = f64::INFINITY;
-        let mut best_move = get_legal_moves(&board, &info_matrix, is_white)[0];
-
-        for legal_move in get_legal_moves(&board, &info_matrix, is_white) {
-            let mut new_board = board.clone();
-            let mut new_info_matrix = info_matrix.clone();
-            make_move(&mut new_board, &mut new_info_matrix, &is_white, &legal_move);
-            let eval = minimax(&new_board, &new_info_matrix, depth - 1, alpha, beta, true).1;
-
-            if eval < min_eval {
-                min_eval = eval;
-                best_move = legal_move;
-            }
+        else {
             beta = beta.min(eval);
-            if beta <= alpha {
-                break;
-            }
         }
-        (best_move, min_eval)
+        if beta <= alpha {
+            break;
+        }
     }
+    return (best_move, best_eval);
 }
