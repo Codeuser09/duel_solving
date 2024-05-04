@@ -1,4 +1,4 @@
-use crate::libcube::display_cube;
+use crate::libcube::_display_cube;
 use crate::libcube::get_top;
 use crate::cube::roll;
 
@@ -91,7 +91,7 @@ pub fn _display_board(board: &Board) {
     for row in board {
         print!("[");
         for cube in row {
-            display_cube(cube);
+            _display_cube(cube);
         }
         print!("]");
         println!();

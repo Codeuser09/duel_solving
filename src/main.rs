@@ -1,4 +1,4 @@
-use crate::interaction::{_play_bvb_game};
+use crate::interaction::_play_bvh_game;
 
 mod cube;
 mod evaluation;
@@ -10,5 +10,5 @@ mod interaction;
 mod minimax;
 
 fn main() {
-   _play_bvb_game();
+    _play_bvh_game();
 }

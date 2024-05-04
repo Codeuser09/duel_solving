@@ -76,7 +76,7 @@ fn winning_square_distance (info_matrix: &InfoMatrix) -> f64 {
     return winning_square_distance.powf(winning_square_distance) * get_smallest_unit(&(winning_square_distance as i32)) as f64 //Inverted because a smaller distance is good
 }
 
-pub fn top_value_total (board: &Board, info_matrix: &InfoMatrix) -> f64 {
+pub fn _top_value_total(board: &Board, info_matrix: &InfoMatrix) -> f64 {
     let mut white_total = 0;
     let mut black_total = 0;
 
@@ -105,7 +105,7 @@ pub fn evaluate_position (board: &Board, info_matrix: &InfoMatrix) -> f64 {
     evaluation += cube_amount_evaluation(info_matrix);
     evaluation += winning_square_distance(&info_matrix);
     evaluation += legal_move_total(&board, &info_matrix);
-    // evaluation += top_value_total(&board, &info_matrix);
+    // evaluation += _top_value_total(&board, &info_matrix);
 
     return evaluation
 }

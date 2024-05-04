@@ -1,7 +1,7 @@
 use crate::cube::{Cube, MoveArray, roll};
 use crate::game::{Board, InfoMatrix};
 
-pub fn display_move_array (move_array: &MoveArray) {
+pub fn _display_move_array(move_array: &MoveArray) {
     println!();
     print!("[");
     for element in move_array {
@@ -144,7 +144,7 @@ pub fn roll_before_dir_change(
 }
 
 
-pub fn display_cube(cube_matrix: &[[i32; 4]; 2]) {
+pub fn _display_cube(cube_matrix: &[[i32; 4]; 2]) {
     for axis in cube_matrix {
         print!("[");
         for element in axis {
