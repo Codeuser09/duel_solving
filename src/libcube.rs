@@ -154,6 +154,18 @@ pub fn _display_cube(cube_matrix: &[[i32; 4]; 2]) {
     }
 }
 
+pub fn _count_cubes(board: &Board) -> i32 {
+    let mut counter = 0;
+    for row in board {
+        for cube in row {
+            if *cube != [[0; 4];2] {
+                counter += 1;
+            }
+        }
+    }
+    return counter
+}
+
 pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
 }

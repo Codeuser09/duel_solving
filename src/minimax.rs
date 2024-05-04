@@ -12,12 +12,13 @@ pub fn minimax(
     beta: f64,
     is_white: bool,
 ) -> (MoveArray, f64) {
-    if depth == 0 || is_won(&info_matrix) != 0 {
-        if is_won(&info_matrix) == 1 {
-            return ([0, 0, 0, 0], 1000000000f64);
+    let is_game_won = is_won(&info_matrix);
+    if depth == 0 || is_game_won != 0 {
+        if is_game_won == 1 {
+            return ([0, 0, 0, 0], f64::INFINITY);
         }
-        if is_won(&info_matrix) == -1 {
-            return ([0, 0, 0, 0], -1000000000f64);
+        if is_game_won == -1 {
+            return ([0, 0, 0, 0], f64::NEG_INFINITY);
         }
         if depth == 0 {
             return ([0, 0, 0, 0], evaluate_position(&board, &info_matrix));

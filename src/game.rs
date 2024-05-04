@@ -3,6 +3,7 @@ use crate::libcube::get_top;
 use crate::cube::roll;
 
 use crate::cube::Cube;
+use crate::evaluation::is_won;
 
 pub type Board = [[[[i32; 4]; 2]; 9]; 8];
 pub type InfoMatrix = Vec<[i32; 4]>;
@@ -84,6 +85,8 @@ pub fn _display_info(board: &Board, info_matrix: &InfoMatrix) {
     _display_tops(board);
     println!();
     _display_info_matrix(info_matrix);
+    println!();
+    println!("Is won: {}", is_won(&info_matrix));
 }
 
 pub fn _display_board(board: &Board) {

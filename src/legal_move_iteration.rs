@@ -34,6 +34,7 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) 
     let mut possible_moves = vec![];
     let possible_turn_directions = [0, 1, 2, 3];
     let possible_is_sw = [0, 1];
+    let mut is_move_duplicate = HashSet::new();
 
     for (cube_id, cube) in info_matrix.iter().enumerate() {
         if cube[3] != is_white as i32 {continue;}
@@ -50,12 +51,21 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) 
             for possible_forward_field in &possible_forward_fields {
                 for is_sw in possible_is_sw {
                     //Be careful with this, as we should probably have duplicates with 0 ff and td
-                    possible_moves.push([
-                        cube_id as i32,
-                        *possible_forward_field,
-                        possible_turn_direction,
-                        is_sw,
-                    ]);
+                    let mut board_dupe = board.clone();
+                    let mut info_matrix_dupe = info_matrix.clone();
+
+                    let possible_move = [
+                    cube_id as i32,
+                    *possible_forward_field,
+                    possible_turn_direction,
+                    is_sw,
+                    ];
+
+                    make_move(&mut board_dupe, &mut info_matrix_dupe, &is_white, &possible_move);
+                    if is_move_duplicate.insert(board_dupe) {
+                        possible_moves.push(possible_move);
+                    }
+
                     // display_move_array(&[cube_id as i32, *possible_forward_field, possible_turn_direction, is_sw]);
                 }
             }
@@ -63,24 +73,7 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) 
     }
     // println!("Possible legal moves: {}", possible_moves.len());
     discard_legal_moves(&board, &info_matrix, &mut possible_moves, &is_white);
-    let non_duped_moves = filter_duplicates(possible_moves, &board, &info_matrix, &is_white);
-    return non_duped_moves;
-}
-pub fn filter_duplicates (legal_moves: Vec<MoveArray>, board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> Vec<MoveArray> {
-    let new_board_array: Vec<Board> = get_possible_boards(&board, &info_matrix, &is_white, &legal_moves);
-
-    let mut set = HashSet::new();
-    let mut non_duped_moves = Vec::new();
-
-    for (index, item) in new_board_array.iter().enumerate() {
-        if set.insert(item.clone()) {
-            non_duped_moves.push(legal_moves[index]);
-        }
-        else {
-            // println!("Filtered duplicate")
-        }
-    }
-    return non_duped_moves;
+    return possible_moves;
 }
 
 pub fn get_possible_boards (board: &Board, info_matrix: &InfoMatrix, is_white: &bool, legal_moves: &Vec<MoveArray>) -> Vec<Board> {

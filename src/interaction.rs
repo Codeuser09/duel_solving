@@ -3,7 +3,7 @@ use std::io;
 use crate::cube::{Cube, make_move, MoveArray, roll};
 use crate::game::{_display_info, Board, InfoMatrix, _display_board, generate_startpos, generate_info_matrix, _display_tops};
 use crate::legal_move_iteration::{get_legal_moves, get_possible_boards};
-use crate::libcube::{_display_move_array};
+use crate::libcube::{_display_move_array, _count_cubes};
 use dialoguer::Confirm;
 use crate::evaluation::{evaluate_position, is_won};
 use crate::minimax::minimax;
@@ -15,13 +15,72 @@ pub fn _play_sample_game(example_game: i32) {
     let mut is_white_player = true;
     //move_array = [cube_id, forward_fields, turn_direction, is_sideways];
 
-    let mut move_array_array ;
+    let mut move_array_array = vec![];
 
     if example_game == 1 {
-        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [17, -3, 1, 1]];
+        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [17, -3, 1, 1]]; //Simply white taking the king
     }
-    else {
-        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [16, 0, 2, 0], [0, 3, 1, 1]];
+    if example_game == 2 {
+        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [16, 0, 2, 0], [0, 3, 1, 1]]; //Simply black taking the king
+    }
+    if example_game == 3 {
+        move_array_array = vec![ //Black's king ending up on the winning square
+            [13, 0, 2, 0],
+            [0, 4, 0, 0],
+            [10, 0, 2, 0],
+            [5, 1, 1, 0],
+            [16, 0, 2, 0],
+            [3, 1, 3, 0],
+            [13, 0, 2, 0],
+            [4, 0, 0, 0],
+            [13, 0, 2, 0],
+            [4, 0, 0, 0],
+            [13, 0, 2, 0],
+            [4, 0, 1, 0],
+            [13, 0, 2, 0],
+            [4, 0, 1, 0],
+            [13, 0, 2, 0],
+            [4, 0, 1, 0],
+            [13, 0, 2, 0],
+        ];
+    }
+    if example_game == 4 {
+        move_array_array = vec![ //White's king ending up on the winning square
+        [13, 0, 2, 0],
+        [0, 4, 0, 0],
+        [10, 0, 2, 0],
+        [5, 1, 1, 0],
+        [16, 0, 2, 0],
+        [3, 1, 3, 0],
+        [13, 0, 2, 0],
+        [4, 0, 0, 0],
+        [13, 0, 2, 0],
+        [4, 0, 0, 0],
+        [13, 0, 3, 0],
+        [4, 0, 0, 0],
+        [13, 0, 3, 0],
+        [4, 0, 0, 0],
+        [13, 0, 1, 0],
+        [4, 0, 0, 0],
+        [13, 0, 3, 0],
+        [4, 0, 0, 0],
+        [13, 0, 3, 0],
+        [4, 0, 0, 0],
+        ]
+    }
+    if example_game == 5 {
+        move_array_array = vec![
+            [12, -5, 1, 0],
+            [5, 5, 1, 0],
+            [12, 3, 3, 1],
+            [5, -3, 3, 1],
+            [8, -3, 1, 0],
+            [5, -3, 1, 0],
+            [11, -3, 3, 0],
+            [3, 5, 3, 0],
+            [13, -4, 0, 0],
+            [3, 0, 0, 0]
+        ];
     }
 
     for move_array in move_array_array.iter_mut() {
@@ -40,11 +99,14 @@ pub fn _play_sample_game(example_game: i32) {
         }
         is_white_player = !is_white_player;
         _display_info(&board, &info_matrix);
+        println!("Cube counter: {}", _count_cubes(&board));
+        println!("Info matrix length: {}", info_matrix.len());
         println!();
-        println!("Eval: {}", evaluate_position(&board, &info_matrix));
+        println!();
+        // for legal in get_legal_moves(&board, &info_matrix, is_white_player) {
+        //     _display_move_array(&legal);
+        // }
     }
-
-    _display_info(&board, &info_matrix);
 }
 
 fn _generate_possible_rollings (cube_matrix: &Cube) -> Vec<Cube> {

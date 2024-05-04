@@ -27,7 +27,7 @@ pub fn is_illegal_move(
                     return 1;
                 } else {
                     // println!("Removed cube from info matrix");
-                    info_matrix.retain(|x| *x != cube);
+                    info_matrix.remove(legality_check_loop_id);
                     return 0;
                 }
             } else {
