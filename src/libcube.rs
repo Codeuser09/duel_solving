@@ -69,10 +69,10 @@ pub fn get_smallest_unit(number: &i32) -> i32 {
 pub fn place_cube(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
-    cube_id: &mut i32,
-    original_position: [usize; 2],
-    new_position: &mut [i32; 2],
-    new_cube: &mut Cube,
+    cube_id: &i32,
+    original_position: &[usize; 2],
+    new_position: &[i32; 2],
+    new_cube: &Cube,
 ) {
     //Setting up our original cube that will be placed on the board
 

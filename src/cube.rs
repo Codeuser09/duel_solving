@@ -141,10 +141,10 @@ pub fn make_move(
     place_cube(
         board,
         info_matrix,
-        &mut new_cube_id,
-        original_position,
-        &mut new_position,
-        &mut new_cube,
+        &new_cube_id,
+        &original_position,
+        &new_position,
+        &new_cube,
     );
 
     if board_before == *board {
