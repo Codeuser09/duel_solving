@@ -1,7 +1,7 @@
 use crate::cube::{Cube, MoveArray, roll};
 use crate::game::{Board, InfoMatrix};
 
-pub fn _display_move_array(move_array: &MoveArray) {
+pub fn display_move_array(move_array: &MoveArray) {
     println!();
     print!("[");
     for element in move_array {
@@ -133,7 +133,7 @@ pub fn roll_before_dir_change(
 }
 
 
-pub fn _display_cube(cube_matrix: &[[i32; 4]; 2]) {
+pub fn display_cube(cube_matrix: &[[i32; 4]; 2]) {
     for axis in cube_matrix {
         print!("[");
         for element in axis {
@@ -143,7 +143,7 @@ pub fn _display_cube(cube_matrix: &[[i32; 4]; 2]) {
     }
 }
 
-pub fn _count_cubes(board: &Board) -> i32 {
+pub fn count_cubes(board: &Board) -> i32 {
     let mut counter = 0;
     for row in board {
         for cube in row {
@@ -159,18 +159,20 @@ pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
 }
 
-pub fn _display_ids(info_matrix: &InfoMatrix) {
+pub fn display_ids(info_matrix: &InfoMatrix, is_white: bool) {
     let mut pseudo_board = [[100; 9];8];
     for (i, cube) in info_matrix.iter().enumerate() {
-        pseudo_board[cube[0] as usize][cube[1] as usize] = i;
+        if cube[3] == is_white as i32 {
+            pseudo_board[cube[0] as usize][cube[1] as usize] = i;
+        }
     }
     println!();
-    println!("IDs:");
+    println!("IDs of your cubes:");
     for row in pseudo_board {
         print!("[");
         for element in row {
             if element == 100 {
-                print!("00,");
+                print!("■■,");
             }
             if element <= 9 {
                 print!("0{},", element);

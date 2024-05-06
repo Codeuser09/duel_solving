@@ -1,4 +1,4 @@
-use crate::libcube::_display_cube;
+use crate::libcube::display_cube;
 use crate::libcube::get_top;
 use crate::cube::roll;
 
@@ -79,29 +79,29 @@ pub fn generate_info_matrix(board: Board) -> InfoMatrix {
     info_matrix
 }
 
-pub fn _display_info(board: &Board, info_matrix: &InfoMatrix) {
-    _display_board(board);
+pub fn display_info(board: &Board, info_matrix: &InfoMatrix) {
+    display_board(board);
     println!();
-    _display_tops(board);
+    display_tops(board);
     println!();
-    _display_info_matrix(info_matrix);
+    display_info_matrix(info_matrix);
     println!();
     println!("Is won: {}", is_won(&info_matrix));
 }
 
-pub fn _display_board(board: &Board) {
+pub fn display_board(board: &Board) {
     println!("Board:");
     for row in board {
         print!("[");
         for cube in row {
-            _display_cube(cube);
+            display_cube(cube);
         }
         print!("]");
         println!();
     }
 }
 
-pub fn _display_tops(board: &Board) {
+pub fn display_tops(board: &Board) {
     println!("Tops");
     for row in board {
         print!("[");
@@ -113,7 +113,7 @@ pub fn _display_tops(board: &Board) {
     }
 }
 
-pub fn _display_info_matrix(index_matrix: &InfoMatrix) {
+pub fn display_info_matrix(index_matrix: &InfoMatrix) {
     println!("Info matrix:");
     for element in index_matrix {
         print!("[");
