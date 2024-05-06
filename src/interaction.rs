@@ -1,10 +1,9 @@
-use std::collections::HashSet;
 use std::io;
-use crate::cube::{Cube, make_move, MoveArray, roll};
+use dialoguer::Confirm;
+use crate::cube::{ make_move, MoveArray};
 use crate::game::{_display_info, Board, InfoMatrix, _display_board, generate_startpos, generate_info_matrix, _display_tops};
 use crate::legal_move_iteration::{get_legal_moves, get_possible_boards};
-use crate::libcube::{_display_move_array, _count_cubes};
-use dialoguer::Confirm;
+use crate::libcube::{_display_move_array, _count_cubes, _display_ids};
 use crate::evaluation::{evaluate_position, is_won};
 use crate::minimax::minimax;
 
@@ -89,7 +88,7 @@ pub fn _play_sample_game(example_game: i32) {
             &mut info_matrix,
             &is_white_player,
             &move_array,
-        ) != 0
+        ) == true
         {
             println!();
             println!();
@@ -109,106 +108,78 @@ pub fn _play_sample_game(example_game: i32) {
     }
 }
 
-fn _generate_possible_rollings (cube_matrix: &Cube) -> Vec<Cube> {
-    let mut possible_rollings : Vec<Cube>= vec![];
-    let mut cubes_already_in = HashSet::new();
-    for starts_sw in 0..2 {
-        for starts_with_ff in -3..4 {
-            for turns_sw in 0..2 {
-                for turns_ff in -3..4 {
-                    let cube_copy = cube_matrix.clone();
-                    let new_cube = roll(starts_with_ff, starts_sw != 0, cube_copy);
-                    if cubes_already_in.insert(new_cube) {
-                        possible_rollings.push(new_cube);
-                    }
-                    if turns_sw == 1 {
-                        let new_cube = roll(turns_ff, turns_sw != 0, new_cube);
-                        if cubes_already_in.insert(new_cube) {
-                            possible_rollings.push(new_cube);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return possible_rollings
-}
-
-fn _convert_input (human_input: &[[u32; 2];2], info_matrix: &InfoMatrix, board: &Board, is_white: &bool) -> MoveArray {
-    let legal_moves = &get_legal_moves(&board, &info_matrix, *is_white);
-    let possible_boards = get_possible_boards(&board, &info_matrix, is_white, legal_moves);
-
-    for possible_cube in _generate_possible_rollings(&board[human_input[0][0] as usize][human_input[0][1] as usize]) {
-        for (i, possible_board) in possible_boards.iter().enumerate() {
-            let mut board_copy = board.clone();
-            board_copy[human_input[1][0] as usize][human_input[1][1] as usize] = possible_cube;
-            board_copy[human_input[0][0] as usize][human_input[0][1] as usize] = [[0; 4]; 2];
-            if board_copy == *possible_board {
-                return legal_moves[i];
-            }
-        }
-    }
-    return [100, 100, 100, 100];
-}
-
-pub fn _get_input (board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveArray{
+fn _get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveArray {
     loop {
+        // Display the board and info matrix
+        _display_tops(&board);
+        _display_ids(&info_matrix);
+        println!();
+
+        let mut input = String::new();
+
+        // Ask for cube ID
+        println!("Enter the cube ID (0-17): ");
+        io::stdin().read_line(&mut input).expect("Failed to read line");
+        let cube_id: i32 = match input.trim().parse() {
+            Ok(num) => num,
+            Err(_) => panic!(),
+        };
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        let mut coord_array: [[String; 2]; 2] = [[String::new(), String::new()], [String::new(), String::new()]];
-        let mut coord_array_int: [[u32; 2];2] = [[10; 2]; 2];
-        let mut is_input_correct = true;
-        loop {
-            for coord in 0..coord_array.len() {
-                for element in 0..coord_array[coord].len() {
-                    _display_tops(&board);
 
-                    println!("Please input the {} that the {} (Starting with index 0 up to {})",
-                             if element == 0 { "Row" } else { "Column" },
-                             if coord == 0 { "Cube you want to move is in" } else { "Square you want to move that cube to to is in" },
-                             if element == 0 { "7" } else { "8" }
-                    );
-
-                    io::stdin()
-                        .read_line(&mut coord_array[coord][element])
-                        .expect("Failed to read line");
-
-                    coord_array_int[coord][element] = match coord_array[coord][element].trim().parse() {
-                        Ok(num) => num,
-                        Err(_) => continue,
-                    };
-                    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                }
+        let legal_moves = get_legal_moves(&board, &info_matrix, *is_white);
+        let mut legal_cube_moves = vec![];
+        for legal_move in legal_moves {
+            if legal_move[0] == cube_id as i32 {
+                legal_cube_moves.push(legal_move)
             }
-            for coord in coord_array_int {
-                for element in coord {
-                    if element == 10 {
-                        is_input_correct = false;
-                    }
-                }
-            }
-            if is_input_correct == true { break }
         }
 
-        let real_move = _convert_input(&coord_array_int, &info_matrix, &board, &is_white);
-        if real_move == [100, 100, 100, 100] {
-            println!("Illegal choice, please choose another move");
+        if info_matrix[cube_id as usize][3] != *is_white as i32 {
+            println!("You cannot move the cube of the opponent");
             continue
         }
 
-        let mut board_clone = board.clone();
-        let mut info_matrix_clone = info_matrix.clone();
-        make_move(&mut board_clone, &mut info_matrix_clone, &is_white, &real_move);
-        _display_tops(&board_clone);
-        let confirmation = Confirm::new()
-            .with_prompt("This would be the board after your move, is it correct?")
-            .interact()
-            .unwrap();
+        for (i, legal_board) in get_possible_boards(&board, &info_matrix, is_white, &legal_cube_moves).iter().enumerate() {
+            println!();
+            println!("Move number: {i}");
+            _display_tops(&legal_board);
+        }
 
-        if confirmation {
-            println!("Looks like it's fine to you");
-            return real_move;
-        } else {
-            println!("nevermind then :(");
+        let mut input2 = String::new();
+        println!("Please enter the move you want to make");
+        io::stdin().read_line(&mut input2).expect("Failed to read line");
+        let move_index: i32 = match input2.trim().parse() {
+            Ok(num) => num,
+            Err(_) => panic!(),
+        };
+
+        // Return the move array
+        let move_array = legal_cube_moves[move_index as usize];
+        let mut board_clone = board.clone();
+        let mut info_clone = info_matrix.clone();
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        if make_move(&mut board_clone, &mut info_clone, &is_white, &move_array) == false {
+            let mut board_clone = board.clone();
+            let mut info_matrix_clone = info_matrix.clone();
+            make_move(&mut board_clone, &mut info_matrix_clone, &is_white, &move_array);
+            _display_tops(&board_clone);
+            let confirmation = Confirm::new()
+                .with_prompt("This would be the board after your move, is it correct?")
+                .interact()
+                .unwrap();
+
+            if confirmation {
+                print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+                println!("Great, next player make your move:");
+                return move_array;
+            } else {
+                print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+                println!("never mind then :(, please choose another move");
+            }
+        }
+        else {
+            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+            println!("Illegal move, please choose another");
         }
     }
 }
@@ -273,6 +244,5 @@ pub fn _play_hvh_game () {
         }
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
         is_white = !is_white;
-        println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
     }
 }

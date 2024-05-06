@@ -52,7 +52,7 @@ pub fn change_direction(turn_direction: &i32, is_sw: &i32, forward_direction: &i
     let mut abs_direction_unit = get_abs_direction_unit(&is_sw, &forward_direction);
 
     abs_direction_unit = (abs_direction_unit + *turn_direction) % 4;
-    return (get_direction(&abs_direction_unit));
+    return get_direction(&abs_direction_unit);
 }
 
 pub fn place_cube(
@@ -157,4 +157,29 @@ pub fn _count_cubes(board: &Board) -> i32 {
 
 pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
+}
+
+pub fn _display_ids(info_matrix: &InfoMatrix) {
+    let mut pseudo_board = [[100; 9];8];
+    for (i, cube) in info_matrix.iter().enumerate() {
+        pseudo_board[cube[0] as usize][cube[1] as usize] = i;
+    }
+    println!();
+    println!("IDs:");
+    for row in pseudo_board {
+        print!("[");
+        for element in row {
+            if element == 100 {
+                print!("00,");
+            }
+            if element <= 9 {
+                print!("0{},", element);
+            }
+            if element != 100 && element > 9 {
+                print!("{},", element);
+            }
+        }
+        print!("]");
+        println!();
+    }
 }

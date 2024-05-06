@@ -1,4 +1,4 @@
-use crate::interaction::{_play_sample_game};
+use crate::interaction::{_play_hvh_game};
 
 mod cube;
 mod evaluation;
@@ -10,5 +10,5 @@ mod interaction;
 mod minimax;
 
 fn main() {
-    _play_sample_game(5);
+    _play_hvh_game();
 }

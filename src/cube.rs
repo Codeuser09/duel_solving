@@ -1,6 +1,6 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
-use crate::legality_check::{is_illegal_move, is_legal_operation, is_oob};
+use crate::legality_check::{is_illegal_move, is_illegal_operation, is_oob};
 use crate::libcube::{change_direction, get_index, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
 
 pub type Cube = [[i32; 4]; 2];
@@ -49,24 +49,24 @@ pub fn roll(shift: i32, is_sw: bool, original_matrix: Cube) -> Cube {
 
 // abs_direction_units work like turn_directions, but the ff are always positive
 
-//Exit code 1 here means that the move is illegal, while exit code 0 means that it was legal and the board was successfully changed
+//Returns is_illegal
 pub fn make_move(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
     is_white_player: &bool,
     move_array: &MoveArray,
-) -> i32 {
-    let [cube_id, mut forward_fields, turn_direction, mut is_sw] = move_array;
+) -> bool {
+    let [mut cube_id, forward_fields, turn_direction, mut is_sw] = move_array;
 
-    if is_legal_operation(&move_array) == 1 {
-        return 1;
+    if is_illegal_operation(&move_array) == true {
+        return true;
     }
 
     // display_move_array(move_array);
 
     let original_position = [
-        info_matrix[*cube_id as usize][0] as usize,
-        info_matrix[*cube_id as usize][1] as usize,
+        info_matrix[cube_id as usize][0] as usize,
+        info_matrix[cube_id as usize][1] as usize,
     ];
 
     let mut new_position: [i32; 2] = [original_position[0] as i32, original_position[1] as i32];
@@ -74,8 +74,8 @@ pub fn make_move(
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
     let mut new_cube = board[original_position[0]][original_position[1]];
     let mut forward_direction = forward_fields.signum();
-    let is_white_cube = info_matrix[*cube_id as usize][3];
-    if *turn_direction == 0 && forward_fields == 0 {
+    let is_white_cube = info_matrix[cube_id as usize][3];
+    if *turn_direction == 0 && *forward_fields == 0 {
         forward_direction = 1;
     }
     let board_before = board.clone();
@@ -90,7 +90,7 @@ pub fn make_move(
     );
 
     for i in 0..available_moves {
-        if *turn_direction != 0 && i == forward_fields || *turn_direction != 0 && i == -forward_fields
+        if *turn_direction != 0 && i == *forward_fields || *turn_direction != 0 && i == -forward_fields
         {
             (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
             new_cube = roll_after_dir_change(
@@ -108,36 +108,34 @@ pub fn make_move(
             &forward_direction,
             &forward_fields,
             &available_moves,
-        ) == 1 {
-            return 1;
+        ) == true {
+            return true;
         }
 
         //Setting up the new position
         new_position[is_sw as usize] += forward_direction;
 
-        if is_illegal_move( //Shit's happening at position 1, 7 move 3
+        let is_illegal = is_illegal_move(
             info_matrix,
             &new_position,
             &available_moves,
             &i,
             &is_white_cube,
             is_white_player,
-        ) == 1 {
-            return 1;
+        );
+
+        if is_illegal.0 == true {
+            return true;
+        }
+
+        if is_illegal.1 == true && cube_id > is_illegal.2 as i32 {
+            cube_id -= 1;
         }
     }
-
-    // We need to do this in case cube id is 17 and it's taking a cube in which case it tries to place the cube in an oob spot in the info matrix
-    let mut new_cube_id: i32 = *cube_id;
-
-    if *cube_id == info_matrix.len() as i32 {
-        new_cube_id -= 1;
-    }
-
     place_cube(
         board,
         info_matrix,
-        &new_cube_id,
+        &cube_id,
         &original_position,
         &new_position,
         &new_cube,
@@ -145,8 +143,8 @@ pub fn make_move(
 
     if board_before == *board {
         println!("Board didn't change");
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }

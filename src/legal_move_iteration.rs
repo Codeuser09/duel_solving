@@ -20,8 +20,7 @@ fn discard_legal_moves(
             &mut original_info_matrix,
             is_white,
             &possible_moves[i],
-        ) == 1
-        {
+        ) == true {
             possible_moves.remove(i);
         }
         else {
