@@ -1,6 +1,6 @@
 use crate::game::{Board, InfoMatrix};
 use crate::legal_move_iteration::get_legal_moves;
-use crate::libcube::{get_smallest_unit, get_top};
+use crate::libcube::{get_top};
 
 fn cube_amount_evaluation (info_matrix: &InfoMatrix) -> f64 {
     let mut w_cube_amount = 0f64;
@@ -73,7 +73,7 @@ fn winning_square_distance (info_matrix: &InfoMatrix) -> f64 {
     }
     // println!("w_distance: {}, b_distance: {}, Winning square distance eval: {}", w_distance, b_distance, w_distance - b_distance);
     let winning_square_distance = b_distance - w_distance;
-    return winning_square_distance.powf(winning_square_distance) * get_smallest_unit(&(winning_square_distance as i32)) as f64 //Inverted because a smaller distance is good
+    return winning_square_distance.powf(winning_square_distance) * winning_square_distance.signum() //Inverted because a smaller distance is good
 }
 
 pub fn _top_value_total(board: &Board, info_matrix: &InfoMatrix) -> f64 {

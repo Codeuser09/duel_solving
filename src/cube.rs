@@ -1,7 +1,7 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
 use crate::legality_check::{is_illegal_move, is_legal_operation, is_oob};
-use crate::libcube::{change_direction, get_index, get_smallest_unit, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
+use crate::libcube::{change_direction, get_index, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
 
 pub type Cube = [[i32; 4]; 2];
 pub type MoveArray = [i32; 4];
@@ -73,7 +73,7 @@ pub fn make_move(
 
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
     let original_cube = board[original_position[0]][original_position[1]].clone();
-    let mut forward_direction = get_smallest_unit(&forward_fields);
+    let mut forward_direction = forward_fields.signum();
     let is_white_cube = info_matrix[*cube_id as usize][3];
     if *turn_direction == 0 && forward_fields == 0 {
         forward_direction = 1;

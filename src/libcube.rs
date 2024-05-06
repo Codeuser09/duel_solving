@@ -59,13 +59,6 @@ pub fn change_direction(turn_direction: &i32, is_sw: &i32, forward_direction: &i
     return (new_is_sw, new_forward_direction);
 }
 
-pub fn get_smallest_unit(number: &i32) -> i32 {
-    if *number < 0 {
-        return -1;
-    }
-    return if *number > 0 { 1 } else { 0 };
-}
-
 pub fn place_cube(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
