@@ -52,11 +52,7 @@ pub fn change_direction(turn_direction: &i32, is_sw: &i32, forward_direction: &i
     let mut abs_direction_unit = get_abs_direction_unit(&is_sw, &forward_direction);
 
     abs_direction_unit = (abs_direction_unit + *turn_direction) % 4;
-
-    let new_is_sw = get_direction(&abs_direction_unit).0;
-    let new_forward_direction = get_direction(&abs_direction_unit).1;
-
-    return (new_is_sw, new_forward_direction);
+    return (get_direction(&abs_direction_unit));
 }
 
 pub fn place_cube(
@@ -81,8 +77,8 @@ pub fn place_cube(
 }
 
 pub fn roll_after_dir_change(
-    is_sw: &mut i32,
-    forward_fields: &mut i32,
+    is_sw: &i32,
+    forward_fields: &i32,
     available_moves: i32,
     mut new_cube: Cube,
     forward_direction: i32,
@@ -104,8 +100,8 @@ pub fn roll_after_dir_change(
 }
 
 pub fn roll_before_dir_change(
-    is_sw: &mut i32,
-    forward_fields: &mut i32,
+    is_sw: &i32,
+    forward_fields: &i32,
     turn_direction: &i32,
     available_moves: i32,
     original_cube: [[i32; 4]; 2],

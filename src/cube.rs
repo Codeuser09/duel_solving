@@ -72,7 +72,7 @@ pub fn make_move(
     let mut new_position: [i32; 2] = [original_position[0] as i32, original_position[1] as i32];
 
     let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
-    let original_cube = board[original_position[0]][original_position[1]].clone();
+    let mut new_cube = board[original_position[0]][original_position[1]];
     let mut forward_direction = forward_fields.signum();
     let is_white_cube = info_matrix[*cube_id as usize][3];
     if *turn_direction == 0 && forward_fields == 0 {
@@ -80,24 +80,22 @@ pub fn make_move(
     }
     let board_before = board.clone();
 
-    let mut new_cube = roll_before_dir_change(
-        &mut is_sw,
-        &mut forward_fields,
+    new_cube = roll_before_dir_change(
+        &is_sw,
+        &forward_fields,
         turn_direction,
         available_moves,
-        original_cube,
+        new_cube,
         forward_direction,
     );
 
     for i in 0..available_moves {
         if *turn_direction != 0 && i == forward_fields || *turn_direction != 0 && i == -forward_fields
         {
-            let new_direction = change_direction(&turn_direction, &mut is_sw, &forward_direction);
-            is_sw = new_direction.0;
-            forward_direction = new_direction.1;
+            (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
             new_cube = roll_after_dir_change(
-                &mut is_sw,
-                &mut forward_fields,
+                &is_sw,
+                &forward_fields,
                 available_moves,
                 new_cube,
                 forward_direction,
@@ -117,16 +115,14 @@ pub fn make_move(
         //Setting up the new position
         new_position[is_sw as usize] += forward_direction;
 
-        let is_illegal_move = is_illegal_move(
+        if is_illegal_move( //Shit's happening at position 1, 7 move 3
             info_matrix,
             &new_position,
             &available_moves,
             &i,
             &is_white_cube,
             is_white_player,
-        );
-
-        if is_illegal_move == 1 {
+        ) == 1 {
             return 1;
         }
     }
