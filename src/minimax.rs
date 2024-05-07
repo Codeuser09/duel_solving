@@ -1,3 +1,4 @@
+use std::sync::{Arc, Mutex};
 use crate::cube::{make_move, MoveArray};
 use crate::game::{Board, InfoMatrix};
 use crate::evaluation::{evaluate_position, is_won};
@@ -25,6 +26,9 @@ pub fn minimax(
         }
     }
 
+    let mut shared_alpha = Arc::new(Mutex::new(alpha));
+    let mut shared_beta = Arc::new(Mutex::new(beta));
+
     let (best_move, best_eval) = get_legal_moves(&board, &info_matrix, is_white)
         .into_par_iter() // Parallel iterator
         .map(|legal_move| {
@@ -34,6 +38,18 @@ pub fn minimax(
             let eval =
                 minimax(&new_board, &new_info_matrix, depth - 1, alpha, beta, !is_white).1;
 
+            let mut alpha = shared_alpha.lock().unwrap();
+            let mut beta = shared_beta.lock().unwrap();
+
+            if is_white {
+                *alpha = (*alpha).max(eval);
+            } else {
+                *beta = (*beta).min(eval);
+            }
+
+            if *beta <= *alpha {
+                (legal_move, eval);
+            }
             (legal_move, eval)
         })
         .reduce(
