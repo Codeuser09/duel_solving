@@ -1,9 +1,8 @@
 use crate::cube::{make_move, MoveArray};
 use crate::game::{Board, InfoMatrix};
 use crate::libcube::{get_top};
-use std::collections::HashSet;
+use crate::legality_check::check_legality;
 
-// move_array = [cube_id, forward_fields, turn_direction]
 
 fn discard_legal_moves(
     board: &Board,
@@ -13,11 +12,9 @@ fn discard_legal_moves(
 ) {
     let mut i = 0;
     while i < possible_moves.len() {
-        let mut original_board = board.clone();
-        let mut original_info_matrix: InfoMatrix = info_matrix.clone();
-        if make_move(
-            &mut original_board,
-            &mut original_info_matrix,
+        if check_legality(
+            &board,
+            &info_matrix,
             is_white,
             &possible_moves[i],
         ) == true {
@@ -29,11 +26,22 @@ fn discard_legal_moves(
     }
 }
 
+// pub fn calculate_position (board: &Board, info_matrix: &InfoMatrix, legal_move: &MoveArray) -> [i32; 2]{
+//     let [cube_id, forward_fields, turn_direction, is_sw] = legal_move;
+//     let forward_direction = forward_fields.signum();
+//     let mut new_position = [info_matrix[*cube_id as usize][0], info_matrix[*cube_id as usize][1]];
+//     let available_move =  get_top(&board[new_position[0] as usize][new_position[1] as usize]);
+//     new_position[*is_sw as usize] += forward_fields;
+//     let (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
+//     new_position[is_sw as usize] += forward_direction * available_move - forward_fields;
+//
+//     return new_position;
+// }
+
 pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) -> Vec<MoveArray> {
     let mut possible_moves = vec![];
     let possible_turn_directions = [0, 1, 2, 3];
     let possible_is_sw = [0, 1];
-    let mut is_move_duplicate = HashSet::new();
 
     for (cube_id, cube) in info_matrix.iter().enumerate() {
         if cube[3] != is_white as i32 {continue;}
@@ -49,23 +57,13 @@ pub fn get_legal_moves(board: &Board, info_matrix: &InfoMatrix, is_white: bool) 
         for possible_turn_direction in possible_turn_directions {
             for possible_forward_field in &possible_forward_fields {
                 for is_sw in possible_is_sw {
-                    //Be careful with this, as we should probably have duplicates with 0 ff and td
-                    let mut board_dupe = board.clone();
-                    let mut info_matrix_dupe = info_matrix.clone();
-
                     let possible_move = [
                     cube_id as i32,
                     *possible_forward_field,
                     possible_turn_direction,
                     is_sw,
                     ];
-
-                    make_move(&mut board_dupe, &mut info_matrix_dupe, &is_white, &possible_move);
-                    if is_move_duplicate.insert(board_dupe) {
-                        possible_moves.push(possible_move);
-                    }
-
-                    // display_move_array(&[cube_id as i32, *possible_forward_field, possible_turn_direction, is_sw]);
+                    possible_moves.push(possible_move);
                 }
             }
         }
