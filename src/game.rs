@@ -1,18 +1,24 @@
-use crate::libcube::display_cube;
-use crate::libcube::get_top;
+use log::warn;
 use crate::cube::roll;
+use crate::display::display_cube;
 
 use crate::cube::Cube;
-use crate::evaluation::is_won;
 
 pub type Board = [[[[i32; 4]; 2]; 9]; 8];
 pub type InfoMatrix = Vec<[i32; 4]>;
 
 fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
     let five: Cube = [[5, 3, 2, 4], [5, 1, 2, 6]];
-    let six: Cube = roll(1, true, five);
-    let two: Cube = roll(1, true, six);
-    let one: Cube = roll(1, true, two);
+
+    let mut six = five.clone();
+    roll(-1, 1usize, &mut six);
+
+    let mut two = six.clone();
+    roll(-1, 1usize, &mut two);
+
+    let mut one = two.clone();
+    roll(-1, 1usize, &mut one);
+
     let king: Cube = [[1; 4]; 2];
     let zero: Cube = [[0; 4]; 2];
 
@@ -21,9 +27,11 @@ fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
 
 fn black_cube_row(cube_row: [Cube; 9]) -> [Cube; 9] {
     let mut cube_row_b = cube_row.clone();
-    for (_i, cube) in cube_row_b.iter_mut().enumerate() {
-        *cube = roll(2, false, *cube);
-        *cube = roll(2, true, *cube);
+    for (i, cube) in cube_row_b.iter_mut().enumerate() {
+        let mut new_cube = cube.clone();
+        roll(2, 1, &mut new_cube);
+        roll(2, 0, &mut new_cube);
+        *cube = new_cube;
     }
     cube_row_b
 }
@@ -79,47 +87,3 @@ pub fn generate_info_matrix(board: Board) -> InfoMatrix {
     info_matrix
 }
 
-pub fn display_info(board: &Board, info_matrix: &InfoMatrix) {
-    display_board(board);
-    println!();
-    display_tops(board);
-    println!();
-    display_info_matrix(info_matrix);
-    println!();
-    println!("Is won: {}", is_won(&info_matrix));
-}
-
-pub fn display_board(board: &Board) {
-    println!("Board:");
-    for row in board {
-        print!("[");
-        for cube in row {
-            display_cube(cube);
-        }
-        print!("]");
-        println!();
-    }
-}
-
-pub fn display_tops(board: &Board) {
-    println!("Tops");
-    for row in board {
-        print!("[");
-        for cube in row {
-            print!("{}", get_top(cube));
-        }
-        print!("]");
-        println!();
-    }
-}
-
-pub fn display_info_matrix(index_matrix: &InfoMatrix) {
-    println!("Info matrix:");
-    for element in index_matrix {
-        print!("[");
-        for coordinate in element {
-            print!("{}", coordinate);
-        }
-        print!("]");
-    }
-}

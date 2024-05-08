@@ -1,0 +1,96 @@
+use std::io;
+use crate::cube::MoveArray;
+use crate::evaluation::is_won;
+use crate::game::{Board, generate_info_matrix, generate_startpos, InfoMatrix};
+use crate::legal_move_iteration::get_legal_moves;
+use crate::libcube::get_top;
+
+pub fn display_move_array(move_array: &MoveArray) {
+    println!();
+    print!("[");
+    for element in move_array {
+        print!("{element},");
+    }
+    print!("]");
+    println!();
+}
+pub fn display_cube(cube_matrix: &[[i32; 4]; 2]) {
+    for axis in cube_matrix {
+        print!("[");
+        for element in axis {
+            print!("{}", element);
+        }
+        print!("]");
+    }
+}
+
+pub fn display_board(board: &Board) {
+    println!("Board:");
+    for row in board {
+        print!("[");
+        for cube in row {
+            display_cube(cube);
+        }
+        print!("]");
+        println!();
+    }
+}
+
+pub fn display_tops(board: &Board) {
+    println!("Tops");
+    for row in board {
+        print!("[");
+        for cube in row {
+            print!("{}", get_top(cube));
+        }
+        print!("]");
+        println!();
+    }
+}
+pub fn display_info(board: &Board, info_matrix: &InfoMatrix) {
+    display_board(board);
+    println!();
+    display_tops(board);
+    println!();
+    display_info_matrix(info_matrix);
+    println!();
+    println!("Is won: {}", is_won(&info_matrix));
+}
+
+pub fn display_info_matrix(index_matrix: &InfoMatrix) {
+    println!("Info matrix:");
+    for element in index_matrix {
+        print!("[");
+        for coordinate in element {
+            print!("{}", coordinate);
+        }
+        print!("]");
+    }
+}
+
+pub fn display_ids(info_matrix: &InfoMatrix, is_white: bool) {
+    let mut pseudo_board = [[100; 9];8];
+    for (i, cube) in info_matrix.iter().enumerate() {
+        if cube[3] == is_white as i32 {
+            pseudo_board[cube[0] as usize][cube[1] as usize] = i;
+        }
+    }
+    println!();
+    println!("IDs of your cubes:");
+    for row in pseudo_board {
+        print!("[");
+        for element in row {
+            if element == 100 {
+                print!("■■,");
+            }
+            if element <= 9 {
+                print!("0{},", element);
+            }
+            if element != 100 && element > 9 {
+                print!("{},", element);
+            }
+        }
+        print!("]");
+        println!();
+    }
+}

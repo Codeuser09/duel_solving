@@ -1,9 +1,11 @@
 use std::io;
+use std::process::exit;
 use dialoguer::Confirm;
-use crate::cube::{ make_move, MoveArray};
-use crate::game::{display_info, Board, InfoMatrix, display_board, generate_startpos, generate_info_matrix, display_tops};
+use crate::cube::{make_move, MoveArray};
+use crate::game::{Board, InfoMatrix, generate_startpos, generate_info_matrix};
+use crate::display::{display_info, display_board, display_tops, display_ids, display_move_array};
 use crate::legal_move_iteration::{get_legal_moves, get_possible_boards};
-use crate::libcube::{display_move_array, count_cubes, display_ids};
+use crate::libcube::{count_cubes};
 use crate::evaluation::{evaluate_position, is_won};
 use crate::minimax::minimax;
 
@@ -90,7 +92,8 @@ pub fn play_sample_game() {
         ];
     }
 
-    for move_array in move_array_array.iter_mut() {
+    for (i, move_array) in move_array_array.iter_mut().enumerate() {
+        println!("Move number {i}");
         if make_move(
             &mut board,
             &mut info_matrix,
@@ -192,17 +195,26 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
     }
 }
 
+
 pub fn play_bvh_game() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
+    let mut input = String::new();
+    println!("Please enter the amount of moves that the bot should calculate into the future:");
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    let depth: i32 = match input.trim().parse() {
+        Ok(num) => num,
+        Err(_) => panic!(),
+    };
+
     while is_won(&info_matrix) == 0 {
         if is_white == true {
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             println!("Bot is thinking");
-            let bot_move = minimax(&board, &info_matrix, 3, f64::NEG_INFINITY, f64::INFINITY, true);
+            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true);
             make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
         }
         else {
@@ -211,6 +223,8 @@ pub fn play_bvh_game() {
         }
         is_white = !is_white;
     }
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    println!("{}", if is_won(&info_matrix) == 1 {"The bot won"} else {"You won"});
 }
 
 pub fn play_bvb_game() {
@@ -219,24 +233,35 @@ pub fn play_bvb_game() {
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
+    let mut input = String::new();
+    println!("Please enter the amount of moves that the bot should calculate into the future:");
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    let depth: i32 = match input.trim().parse() {
+        Ok(num) => num,
+        Err(_) => panic!(),
+    };
+
     while is_won(&info_matrix) == 0 {
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         if is_white == true {
-            let bot_move = minimax(&board, &info_matrix, 3, f64::NEG_INFINITY, f64::INFINITY, true);
+            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true);
             make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
+            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             print!("Bot evaluation: {}, ", bot_move.1);
-            display_move_array(&bot_move.0);
         } else {
-            let bot_move = minimax(&board, &info_matrix, 3, f64::NEG_INFINITY, f64::INFINITY, false);
+            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, false);
             make_move(&mut board, &mut info_matrix, &false, &bot_move.0);
+            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             print!("Bot evaluation: {}, ", bot_move.1);
-            display_move_array(&bot_move.0);
         }
         println!("Static evaluation: {}", evaluate_position(&board, &info_matrix));
         is_white = !is_white;
         display_board(&board);
         println!();
     }
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    println!("{}", if is_won(&info_matrix) == 1 {"White won"} else {"Black won"});
 }
 
 pub fn play_hvh_game() {
@@ -244,6 +269,7 @@ pub fn play_hvh_game() {
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
+
 
     while is_won(&info_matrix) == 0 {
         if is_white == true {
@@ -256,5 +282,47 @@ pub fn play_hvh_game() {
         }
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
         is_white = !is_white;
+    }
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    println!("{}", if is_won(&info_matrix) == 1 {"White won"} else {"Black won"});
+}
+
+pub fn display_legal_moves () {
+    println!("Do you want to print white's (1) or black's legal moves (0)");
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    let purpose: i32 = match input.trim().parse() {
+        Ok(num) => num,
+        Err(_) => panic!(),
+    };
+
+    let mut board = generate_startpos();
+    let mut info_matrix = generate_info_matrix(board);
+    for legal_move in get_legal_moves(&board, &info_matrix, purpose != 0) {
+        display_move_array(&legal_move);
+    }
+}
+
+pub fn dev_mode () {
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    println!("What do you want to do?");
+    println!("1: Play a sample game");
+    println!("2: Print all legal moves");
+    println!("3: Exit");
+    let mut input= String::new();
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    let purpose: i32 = match input.trim().parse() {
+        Ok(num) => num,
+        Err(_) => panic!(),
+    };
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    if purpose == 1 {
+        play_sample_game();
+    }
+    if purpose == 2 {
+        display_legal_moves();
+    }
+    if purpose == 3 {
+        exit(0);
     }
 }

@@ -1,15 +1,7 @@
 use crate::cube::{Cube, MoveArray, roll};
 use crate::game::{Board, InfoMatrix};
 
-pub fn display_move_array(move_array: &MoveArray) {
-    println!();
-    print!("[");
-    for element in move_array {
-        print!("{element},");
-    }
-    print!("]");
-    println!();
-}
+
 
 pub fn get_index(index: i32) -> usize {
     let index_wrapped: i32 = index % 4;
@@ -69,78 +61,12 @@ pub fn place_cube(
     let zero_cube = [[0; 4]; 2];
 
     // Actually placing new cube
+
     board[new_position[0] as usize][new_position[1] as usize] = *new_cube;
     board[original_position[0]][original_position[1]] = zero_cube;
 
     info_matrix[*cube_id as usize][0] = new_position[0];
     info_matrix[*cube_id as usize][1] = new_position[1];
-}
-
-pub fn roll_after_dir_change(
-    is_sw: &i32,
-    forward_fields: &i32,
-    available_moves: i32,
-    mut new_cube: Cube,
-    forward_direction: i32,
-) -> Cube {
-    if *is_sw == 1 {
-        new_cube = roll(
-            -(available_moves - forward_fields.abs()) * forward_direction,
-            true,
-            new_cube,
-        );
-    } else {
-        new_cube = roll(
-            (available_moves - forward_fields.abs()) * forward_direction,
-            false,
-            new_cube,
-        );
-    }
-    return new_cube;
-}
-
-pub fn roll_before_dir_change(
-    is_sw: &i32,
-    forward_fields: &i32,
-    turn_direction: &i32,
-    available_moves: i32,
-    original_cube: [[i32; 4]; 2],
-    forward_direction: i32,
-) -> Cube {
-    let new_cube;
-    if *turn_direction != 0 {
-        if *is_sw == 1 {
-            new_cube = roll(-*forward_fields, *is_sw != 0, original_cube);
-        } else {
-            new_cube = roll(*forward_fields, *is_sw != 0, original_cube);
-        }
-    } else {
-        if *is_sw == 1 {
-            new_cube = roll(
-                -available_moves * forward_direction,
-                *is_sw != 0,
-                original_cube,
-            );
-        } else {
-            new_cube = roll(
-                available_moves * forward_direction,
-                *is_sw != 0,
-                original_cube,
-            );
-        }
-    }
-    return new_cube;
-}
-
-
-pub fn display_cube(cube_matrix: &[[i32; 4]; 2]) {
-    for axis in cube_matrix {
-        print!("[");
-        for element in axis {
-            print!("{}", element);
-        }
-        print!("]");
-    }
 }
 
 pub fn count_cubes(board: &Board) -> i32 {
@@ -159,29 +85,18 @@ pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
 }
 
-pub fn display_ids(info_matrix: &InfoMatrix, is_white: bool) {
-    let mut pseudo_board = [[100; 9];8];
-    for (i, cube) in info_matrix.iter().enumerate() {
-        if cube[3] == is_white as i32 {
-            pseudo_board[cube[0] as usize][cube[1] as usize] = i;
-        }
-    }
-    println!();
-    println!("IDs of your cubes:");
-    for row in pseudo_board {
-        print!("[");
-        for element in row {
-            if element == 100 {
-                print!("■■,");
-            }
-            if element <= 9 {
-                print!("0{},", element);
-            }
-            if element != 100 && element > 9 {
-                print!("{},", element);
-            }
-        }
-        print!("]");
-        println!();
-    }
+
+pub fn calculate_position (board: &Board, info_matrix: &InfoMatrix, legal_move: &MoveArray) -> [i32; 2]{
+    let [cube_id, forward_fields, turn_direction, is_sw] = legal_move;
+    let forward_direction = forward_fields.signum();
+    let mut new_position = [info_matrix[*cube_id as usize][0], info_matrix[*cube_id as usize][1]];
+    let available_moves = get_top(&board[new_position[0] as usize][new_position[1] as usize]);
+    new_position[*is_sw as usize] += forward_fields;
+    let (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
+    println!("Is sideways: {is_sw}");
+
+    let available_moves = (available_moves.abs() - forward_fields.abs()) * forward_direction;
+    new_position[is_sw as usize] += available_moves;
+
+    return new_position;
 }
