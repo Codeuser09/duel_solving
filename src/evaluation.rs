@@ -1,5 +1,5 @@
 use crate::game::{Board, InfoMatrix};
-use crate::legal_move_iteration::get_legal_moves;
+use crate::legal_move_iteration::get_possible_moves;
 use crate::libcube::{get_top};
 fn cube_amount_evaluation (info_matrix: &InfoMatrix) -> f64 {
     let mut w_cube_amount = 0f64;
@@ -93,7 +93,7 @@ pub fn top_value_total(board: &Board, info_matrix: &InfoMatrix) -> f64 {
 }
 
 pub fn legal_move_total (board: &Board, info_matrix: &InfoMatrix) -> f64 {
-    return (get_legal_moves(&board, &info_matrix, true).len() as f64 - get_legal_moves(&board, &info_matrix, false).len() as f64) / 100f64;
+    return (get_possible_moves(&board, &info_matrix, true).len() as f64 - get_possible_moves(&board, &info_matrix, false).len() as f64) / 100f64;
 }
 
 pub fn evaluate_position (board: &Board, info_matrix: &InfoMatrix) -> f64 {

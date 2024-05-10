@@ -1,6 +1,4 @@
-use log::warn;
 use crate::cube::roll;
-use crate::display::display_cube;
 
 use crate::cube::Cube;
 
@@ -11,13 +9,13 @@ fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
     let five: Cube = [[5, 3, 2, 4], [5, 1, 2, 6]];
 
     let mut six = five.clone();
-    roll(-1, 1usize, &mut six);
+    roll(1, 1usize, &mut six);
 
     let mut two = six.clone();
-    roll(-1, 1usize, &mut two);
+    roll(1, 1usize, &mut two);
 
     let mut one = two.clone();
-    roll(-1, 1usize, &mut one);
+    roll(1, 1usize, &mut one);
 
     let king: Cube = [[1; 4]; 2];
     let zero: Cube = [[0; 4]; 2];
@@ -29,8 +27,8 @@ fn black_cube_row(cube_row: [Cube; 9]) -> [Cube; 9] {
     let mut cube_row_b = cube_row.clone();
     for (i, cube) in cube_row_b.iter_mut().enumerate() {
         let mut new_cube = cube.clone();
-        roll(2, 1, &mut new_cube);
-        roll(2, 0, &mut new_cube);
+        roll(-2, 1, &mut new_cube);
+        roll(-2, 0, &mut new_cube);
         *cube = new_cube;
     }
     cube_row_b

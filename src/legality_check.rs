@@ -1,4 +1,5 @@
 use crate::cube::MoveArray;
+use crate::display::display_move_array;
 use crate::game::{Board, InfoMatrix};
 use crate::libcube::{change_direction, get_top};
 
@@ -30,9 +31,7 @@ pub fn is_illegal_move(
                 return (true, false, 0);
             }
         }
-        if *is_white_cube != *is_white_player as i32 {
-            return (true, false, 0);
-        }
+
     }
     return (false, false, 0);
 }
@@ -68,24 +67,17 @@ pub fn is_illegal_move_var (
 pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, forward_fields: &i32, available_moves: &i32) -> bool {
     let maximum_value = get_maximum_value(is_sw);
     if new_position[*is_sw as usize] + forward_direction > maximum_value || new_position[*is_sw as usize] + forward_direction < 0 {
-        // println!("Out of bounds, forward_direction: {forward_direction}, is_sideways: {is_sw}");
         return true;
     }
-    if forward_fields.abs() >= *available_moves {
-        // println!("Too many forward fields or too little forward fields, ff: {}, am: {}", forward_fields, available_moves);
+    if forward_fields.abs() > *available_moves {
         return true;
     }
     return false;
 }
 
-pub fn is_illegal_operation (move_array: &MoveArray) -> bool {
+pub fn is_illegal_operation (move_array: &MoveArray, available_moves: &i32) -> bool {
     let [_cube_id, forward_fields, turn_direction, is_sw] = move_array;
-    if *turn_direction == 2 && *forward_fields != 0 || *turn_direction > 3 || *turn_direction < 0 {
-        // println!("Illegal turn direction");
-        return true;
-    }
-    if *turn_direction == 2 && *is_sw == 1 {
-        // println!("Illegal combo");
+    if *available_moves == *forward_fields && *turn_direction == 1 {
         return true;
     }
     return false;
@@ -99,10 +91,6 @@ pub fn check_legality(
 ) -> bool {
     let [mut cube_id, forward_fields, turn_direction, mut is_sw] = move_array;
 
-    if is_illegal_operation(&move_array) == true {
-        return true;
-    }
-
     // display_move_array(move_array);
 
     let original_position = [
@@ -110,14 +98,15 @@ pub fn check_legality(
         info_matrix[cube_id as usize][1] as usize,
     ];
 
+    let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
+    if is_illegal_operation(&move_array, &available_moves) == true {
+        return true;
+    }
+
     let mut new_position: [i32; 2] = [original_position[0] as i32, original_position[1] as i32];
 
-    let available_moves: i32 = get_top(&board[original_position[0]][original_position[1]]);
     let mut forward_direction = forward_fields.signum();
     let is_white_cube = info_matrix[cube_id as usize][3];
-    if *turn_direction == 0 && *forward_fields == 0 {
-        forward_direction = 1;
-    }
 
     for i in 0..available_moves {
         if *turn_direction != 0 && i == *forward_fields || *turn_direction != 0 && i == -forward_fields
@@ -132,7 +121,6 @@ pub fn check_legality(
             &forward_fields,
             &available_moves,
         ) == true {
-            return true;
         }
 
         //Setting up the new position

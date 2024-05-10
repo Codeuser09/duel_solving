@@ -1,8 +1,6 @@
 use crate::cube::{Cube, MoveArray, roll};
 use crate::game::{Board, InfoMatrix};
 
-
-
 pub fn get_index(index: i32) -> usize {
     let index_wrapped: i32 = index % 4;
     let index_final: usize = if index_wrapped >= 0 {
@@ -69,6 +67,60 @@ pub fn place_cube(
     info_matrix[*cube_id as usize][1] = new_position[1];
 }
 
+pub fn roll_after_dir_change(
+    is_sw: &i32,
+    forward_fields: &i32,
+    available_moves: i32,
+    new_cube: &mut Cube,
+    forward_direction: i32,
+) {
+    if *is_sw == 1 {
+         roll(
+            -(available_moves - forward_fields.abs()) * forward_direction,
+            1,
+            new_cube,
+        );
+    } else {
+         roll(
+            (available_moves - forward_fields.abs()) * forward_direction,
+            0,
+            new_cube,
+        );
+    }
+}
+
+pub fn roll_before_dir_change(
+    is_sw: &i32,
+    forward_fields: &i32,
+    turn_direction: &i32,
+    available_moves: i32,
+    original_cube: &mut Cube,
+    forward_direction: i32,
+) {
+    if *turn_direction != 0 {
+        if *is_sw == 1 {
+            roll(-*forward_fields, *is_sw as usize, original_cube);
+        } else {
+            roll(*forward_fields, *is_sw as usize, original_cube);
+        }
+    } else {
+        if *is_sw == 1 {
+             roll(
+                -available_moves * forward_direction,
+                *is_sw as usize,
+                original_cube,
+            );
+        } else {
+             roll(
+                available_moves * forward_direction,
+                *is_sw as usize,
+                original_cube,
+            );
+        }
+    }
+}
+
+
 pub fn count_cubes(board: &Board) -> i32 {
     let mut counter = 0;
     for row in board {
@@ -87,15 +139,14 @@ pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
 
 
 pub fn calculate_position (board: &Board, info_matrix: &InfoMatrix, legal_move: &MoveArray) -> [i32; 2]{
-    let [cube_id, forward_fields, turn_direction, is_sw] = legal_move;
-    let forward_direction = forward_fields.signum();
+    let [cube_id, forward_fields, turn_direction, mut is_sw] = legal_move;
+    let mut forward_direction = forward_fields.signum();
     let mut new_position = [info_matrix[*cube_id as usize][0], info_matrix[*cube_id as usize][1]];
-    let available_moves = get_top(&board[new_position[0] as usize][new_position[1] as usize]);
-    new_position[*is_sw as usize] += forward_fields;
-    let (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
-    println!("Is sideways: {is_sw}");
+    let mut available_moves = get_top(&board[new_position[0] as usize][new_position[1] as usize]);
+    new_position[is_sw as usize] += forward_fields;
+    (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
 
-    let available_moves = (available_moves.abs() - forward_fields.abs()) * forward_direction;
+    available_moves = (available_moves.abs() - forward_fields.abs()) * forward_direction;
     new_position[is_sw as usize] += available_moves;
 
     return new_position;

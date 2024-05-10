@@ -1,8 +1,9 @@
 use std::io;
+use dialoguer::Confirm;
 use crate::cube::MoveArray;
 use crate::evaluation::is_won;
 use crate::game::{Board, generate_info_matrix, generate_startpos, InfoMatrix};
-use crate::legal_move_iteration::get_legal_moves;
+use crate::legal_move_iteration::get_possible_moves;
 use crate::libcube::get_top;
 
 pub fn display_move_array(move_array: &MoveArray) {
@@ -12,7 +13,6 @@ pub fn display_move_array(move_array: &MoveArray) {
         print!("{element},");
     }
     print!("]");
-    println!();
 }
 pub fn display_cube(cube_matrix: &[[i32; 4]; 2]) {
     for axis in cube_matrix {
@@ -92,5 +92,35 @@ pub fn display_ids(info_matrix: &InfoMatrix, is_white: bool) {
         }
         print!("]");
         println!();
+    }
+}
+
+pub fn input_number (input_string: String) -> i32 {
+    let mut input= String::new();
+    println!("{}", input_string);
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    let number: i32 = match input.trim().parse() {
+        Ok(num) => num,
+        Err(_) => panic!(),
+    };
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    return number;
+}
+
+pub fn confirmation (confirmation_text: String, yes_text: String, no_text: String) -> bool {
+    println!("{}", confirmation_text);
+    let confirmation = Confirm::new()
+        .with_prompt(confirmation_text)
+        .interact()
+        .unwrap();
+
+    if confirmation {
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        println!("{}", yes_text);
+        return confirmation;
+    } else {
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        println!("{}", no_text);
+        return confirmation;
     }
 }

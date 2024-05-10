@@ -3,11 +3,11 @@ use std::process::exit;
 use dialoguer::Confirm;
 use crate::cube::{make_move, MoveArray};
 use crate::game::{Board, InfoMatrix, generate_startpos, generate_info_matrix};
-use crate::display::{display_info, display_board, display_tops, display_ids, display_move_array};
-use crate::legal_move_iteration::{get_legal_moves, get_possible_boards};
+use crate::display::{display_info, display_board, display_tops, display_ids, display_move_array, input_number, confirmation};
+use crate::legal_move_iteration::{get_possible_moves, get_possible_boards};
 use crate::libcube::{count_cubes};
 use crate::evaluation::{evaluate_position, is_won};
-use crate::minimax::minimax;
+use crate::minimax::{_mt_map_minimax, minimax};
 
 pub fn play_sample_game() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -129,15 +129,9 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
         let mut input = String::new();
 
         // Ask for cube ID
-        println!("Enter the cube ID (0-17): ");
-        io::stdin().read_line(&mut input).expect("Failed to read line");
-        let cube_id: i32 = match input.trim().parse() {
-            Ok(num) => num,
-            Err(_) => panic!(),
-        };
-        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
-        let legal_moves = get_legal_moves(&board, &info_matrix, *is_white);
+        let cube_id = input_number(String::from("Enter the cube ID (0-17): "));
+        let legal_moves = get_possible_moves(&board, &info_matrix, *is_white);
         let mut legal_cube_moves = vec![];
         for legal_move in legal_moves {
             if legal_move[0] == cube_id as i32 {
@@ -156,13 +150,7 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
             display_tops(&legal_board);
         }
 
-        let mut input2 = String::new();
-        println!("Please enter the move you want to make");
-        io::stdin().read_line(&mut input2).expect("Failed to read line");
-        let move_index: i32 = match input2.trim().parse() {
-            Ok(num) => num,
-            Err(_) => panic!(),
-        };
+        let move_index = input_number(String::from("Please enter the move you want to make"));
 
         // Return the move array
         let move_array = legal_cube_moves[move_index as usize];
@@ -174,18 +162,10 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
             let mut info_matrix_clone = info_matrix.clone();
             make_move(&mut board_clone, &mut info_matrix_clone, &is_white, &move_array);
             display_tops(&board_clone);
-            let confirmation = Confirm::new()
-                .with_prompt("This would be the board after your move, is it correct?")
-                .interact()
-                .unwrap();
-
-            if confirmation {
-                print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                println!("Great, next player make your move:");
-                return move_array;
-            } else {
-                print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                println!("never mind then :(, please choose another move");
+            if confirmation(String::from("This would be the board after your move, is it correct?"),
+                            String::from("Great, next player make your move:"),
+                            String::from("never mind then :(, please choose another move")) {
+                return move_array
             }
         }
         else {
@@ -214,7 +194,7 @@ pub fn play_bvh_game() {
         if is_white == true {
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             println!("Bot is thinking");
-            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true);
+            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true, true);
             make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
         }
         else {
@@ -245,12 +225,12 @@ pub fn play_bvb_game() {
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         if is_white == true {
-            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true);
+            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true, true);
             make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             print!("Bot evaluation: {}, ", bot_move.1);
         } else {
-            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, false);
+            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, false, true);
             make_move(&mut board, &mut info_matrix, &false, &bot_move.0);
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             print!("Bot evaluation: {}, ", bot_move.1);
@@ -285,44 +265,4 @@ pub fn play_hvh_game() {
     }
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     println!("{}", if is_won(&info_matrix) == 1 {"White won"} else {"Black won"});
-}
-
-pub fn display_legal_moves () {
-    println!("Do you want to print white's (1) or black's legal moves (0)");
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line");
-    let purpose: i32 = match input.trim().parse() {
-        Ok(num) => num,
-        Err(_) => panic!(),
-    };
-
-    let mut board = generate_startpos();
-    let mut info_matrix = generate_info_matrix(board);
-    for legal_move in get_legal_moves(&board, &info_matrix, purpose != 0) {
-        display_move_array(&legal_move);
-    }
-}
-
-pub fn dev_mode () {
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    println!("What do you want to do?");
-    println!("1: Play a sample game");
-    println!("2: Print all legal moves");
-    println!("3: Exit");
-    let mut input= String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line");
-    let purpose: i32 = match input.trim().parse() {
-        Ok(num) => num,
-        Err(_) => panic!(),
-    };
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    if purpose == 1 {
-        play_sample_game();
-    }
-    if purpose == 2 {
-        display_legal_moves();
-    }
-    if purpose == 3 {
-        exit(0);
-    }
 }

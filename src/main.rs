@@ -1,10 +1,7 @@
 use std::io;
 use std::process::exit;
-use crate::cube::make_move;
-use crate::display::display_board;
-use crate::game::{generate_info_matrix, generate_startpos};
-use crate::interaction::{dev_mode, play_bvb_game, play_bvh_game, play_hvh_game, play_sample_game};
-use crate::libcube::calculate_position;
+use crate::interaction::{play_bvb_game, play_bvh_game, play_hvh_game};
+use crate::testing::dev_mode;
 
 mod cube;
 mod evaluation;
@@ -15,6 +12,7 @@ mod libcube;
 mod interaction;
 mod minimax;
 mod display;
+mod testing;
 
 fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -45,10 +43,4 @@ fn main() {
     if purpose == 5 {
         exit(0);
     }
-    // let mut board = generate_startpos();
-    // let mut info_matrix = generate_info_matrix(board);
-    // let my_move= [12, -5, 0, 0];
-    // for element in calculate_position(&board, &info_matrix, &my_move) {
-    //     println!("{}", element);
-    // }
 }
