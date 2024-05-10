@@ -1,7 +1,7 @@
 use crate::cube::{Cube, MoveArray, roll};
 use crate::game::{Board, InfoMatrix};
 
-pub fn get_index(index: i32) -> usize {
+pub fn _get_index(index: i32) -> usize {
     let index_wrapped: i32 = index % 4;
     let index_final: usize = if index_wrapped >= 0 {
         index_wrapped as usize
@@ -138,7 +138,7 @@ pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
 }
 
 
-pub fn calculate_position (board: &Board, info_matrix: &InfoMatrix, legal_move: &MoveArray) -> [i32; 2]{
+pub fn calculate_position(board: &Board, info_matrix: &InfoMatrix, legal_move: &MoveArray) -> [i32; 2]{
     let [cube_id, forward_fields, turn_direction, mut is_sw] = legal_move;
     let mut forward_direction = forward_fields.signum();
     let mut new_position = [info_matrix[*cube_id as usize][0], info_matrix[*cube_id as usize][1]];

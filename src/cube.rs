@@ -1,31 +1,11 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
-use crate::legality_check::{check_legality, is_illegal_move, is_illegal_operation, is_oob};
-use crate::libcube::{calculate_position, change_direction, get_index, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
+use crate::legality_check::{is_illegal_move, is_illegal_operation, is_oob};
+use crate::libcube::{change_direction, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
 
 pub type Cube = [[i32; 4]; 2];
 pub type MoveArray = [i32; 4];
 
-    /* Example usage:
-
-    //This is turning the cube away from you starting with one on the top and two facing towards you and noting down the values
-    let forward_ring: [i32; 4] = [1, 2, 6, 5];
-
-    //This is turning the cube to the right starting with one on the top and two facing towards you and noting down the values
-    let side_ring: [i32; 4] = [1, 4, 6, 3];
-
-    //Defining a cube
-    let mut cube: [[i32; 4]; 2] = [forward_ring, side_ring];
-
-    //A positive value here indicates turning the cube either to the right or towards you
-    let shift: i32 = 5;
-    let is_sw: bool = true;
-
-    //Shifting the target axis to the left at a positive value
-    cube = roll(shift, is_sw, cube);
-
-    display_cube(cube);
-    */
 
 pub fn roll (shift: i32, is_sw: usize, ring_matrix: &mut Cube) {
     let actual_shift = shift % 4;
@@ -42,20 +22,17 @@ pub fn roll (shift: i32, is_sw: usize, ring_matrix: &mut Cube) {
     }
 }
 
-// A positive forward_fields indicates a movement towards white (bottom)
-// Turn_direction 0 indicates not to turn at all, while 1 turns the cube to the right of where it's going
-// This continues clockwise
 
-// abs_direction_units work like turn_directions, but the ff are always positive
-
-//Returns is_illegal
 pub fn make_move(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
     is_white_player: &bool,
     move_array: &MoveArray,
 ) -> bool {
+
+
     let [mut cube_id, forward_fields, turn_direction, mut is_sw] = move_array;
+    if info_matrix[cube_id as usize][3] != *is_white_player as i32  { return true; }
 
     let original_position = [
         info_matrix[cube_id as usize][0] as usize,
@@ -68,9 +45,6 @@ pub fn make_move(
     if is_illegal_operation(&move_array, &available_moves) == true {
         return true;
     }
-
-    // display_move_array(move_array);
-
 
     let mut new_cube = board[original_position[0]][original_position[1]];
     let mut forward_direction = forward_fields.signum();
@@ -119,7 +93,6 @@ pub fn make_move(
             &available_moves,
             &i,
             &is_white_cube,
-            is_white_player,
         );
 
         if is_illegal.0 == true {

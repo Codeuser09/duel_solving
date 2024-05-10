@@ -2,8 +2,7 @@ use std::io;
 use dialoguer::Confirm;
 use crate::cube::MoveArray;
 use crate::evaluation::is_won;
-use crate::game::{Board, generate_info_matrix, generate_startpos, InfoMatrix};
-use crate::legal_move_iteration::get_possible_moves;
+use crate::game::{Board, InfoMatrix};
 use crate::libcube::get_top;
 
 pub fn display_move_array(move_array: &MoveArray) {
@@ -108,7 +107,6 @@ pub fn input_number (input_string: String) -> i32 {
 }
 
 pub fn confirmation (confirmation_text: String, yes_text: String, no_text: String) -> bool {
-    println!("{}", confirmation_text);
     let confirmation = Confirm::new()
         .with_prompt(confirmation_text)
         .interact()

@@ -1,52 +1,10 @@
 use std::io;
 use std::process::exit;
-use std::time::SystemTime;
-use crate::display::{display_move_array, input_number};
-use crate::game::{generate_info_matrix, generate_startpos};
-use crate::interaction::play_sample_game;
+use crate::cube::make_move;
+use crate::display::{display_info, display_move_array};
+use crate::game::{Board, generate_info_matrix, generate_startpos, InfoMatrix};
 use crate::legal_move_iteration::{get_possible_moves};
-use crate::minimax::{_mt_map_minimax, _mt_minimax_par_iter, minimax};
-
-pub fn test_different_bot_versions () {
-    let board = generate_startpos();
-    let info_matrix = generate_info_matrix(board);
-    let depth = input_number(String::from("Please input the amount of moves that the bots should think ahead"));
-    let iterations =  input_number(String::from("Please input how many times the bots should calculate"));
-
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    for minimax_version in 0..3 {
-        for is_move_gen_st in 0..2 {
-            let now = SystemTime::now();
-            for i in 0..iterations {
-                if minimax_version == 0 {
-                    let bot_move = _mt_map_minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true, is_move_gen_st != 0);
-                    display_move_array(&bot_move.0);
-                }
-                if minimax_version == 1 {
-                    let bot_move = _mt_minimax_par_iter(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true, is_move_gen_st != 0);
-                    display_move_array(&bot_move.0);
-                }
-                if minimax_version == 2 {
-                    let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true, is_move_gen_st != 0);
-                    display_move_array(&bot_move.0);
-                }
-            }
-            match now.elapsed() {
-                Ok(elapsed) => {
-                    println!("Bot: minimax multithreading: {}, move generation multithreading {}, depth {}, time {}",
-                             if minimax_version == 0 {"map"} else if minimax_version == 1 {"par_iter"} else {"none"},
-                             if is_move_gen_st != 0 {"yes"} else {"no"},
-                             depth,
-                            elapsed.as_millis() / iterations as u128
-                    );
-                }
-                Err(e) => {
-                    println!("Error: {e:?}");
-                }
-            }
-        }
-    }
-}
+use crate::libcube::{calculate_position, count_cubes};
 
 pub fn display_legal_moves () {
     println!("Do you want to print white's (1) or black's legal moves (0)");
@@ -65,22 +23,139 @@ pub fn display_legal_moves () {
         i += 1;
     }
     println!("And now the single threaded legal moves: ");
-    let mut I = 0;
+    let mut e = 0;
     for legal_move in get_possible_moves(&board, &info_matrix, purpose != 0) {
         display_move_array(&legal_move);
-        I += 1;
+        e += 1;
     }
     println!("Total mt legal moves: {i}");
-    println!("Total st legal moves: {I}");
+    println!("Total st legal moves: {e}");
 }
 
+pub fn play_sample_game() {
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    println!("What sample game do you want to play?");
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    let example_game: i32 = match input.trim().parse() {
+        Ok(num) => num,
+        Err(_) => panic!(),
+    };
+    let mut board: Board = generate_startpos();
+    let mut info_matrix: InfoMatrix = generate_info_matrix(board);
+
+    let mut is_white_player = true;
+    //move_array = [cube_id, forward_fields, turn_direction, is_sideways];
+
+    let mut move_array_array = vec![];
+
+    if example_game == 1 {
+        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [17, -3, 1, 1]]; //Simply white taking the king
+    }
+    if example_game == 2 {
+        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [16, 0, 2, 0], [0, 3, 1, 1]]; //Simply black taking the king
+    }
+    if example_game == 3 {
+        move_array_array = vec![ //Black's king ending up on the winning square
+                                 [13, 0, 2, 0],
+                                 [0, 4, 0, 0],
+                                 [10, 0, 2, 0],
+                                 [5, 1, 1, 0],
+                                 [16, 0, 2, 0],
+                                 [3, 1, 3, 0],
+                                 [13, 0, 2, 0],
+                                 [4, 0, 0, 0],
+                                 [13, 0, 2, 0],
+                                 [4, 0, 0, 0],
+                                 [13, 0, 2, 0],
+                                 [4, 0, 1, 0],
+                                 [13, 0, 2, 0],
+                                 [4, 0, 1, 0],
+                                 [13, 0, 2, 0],
+                                 [4, 0, 1, 0],
+                                 [13, 0, 2, 0],
+        ];
+    }
+    if example_game == 4 {
+        move_array_array = vec![ //White's king ending up on the winning square
+                                 [13, 0, 2, 0],
+                                 [0, 4, 0, 0],
+                                 [10, 0, 2, 0],
+                                 [5, 1, 1, 0],
+                                 [16, 0, 2, 0],
+                                 [3, 1, 3, 0],
+                                 [13, 0, 2, 0],
+                                 [4, 0, 0, 0],
+                                 [13, 0, 2, 0],
+                                 [4, 0, 0, 0],
+                                 [13, 0, 3, 0],
+                                 [4, 0, 0, 0],
+                                 [13, 0, 3, 0],
+                                 [4, 0, 0, 0],
+                                 [13, 0, 1, 0],
+                                 [4, 0, 0, 0],
+                                 [13, 1, 3, 0],
+                                 [4, 1, 1, 0],
+                                 [13, 1, 3, 0],
+                                 [4, 2, 3, 0],
+        ]
+    }
+    if example_game == 5 {
+        move_array_array = vec![
+            [12, -5, 1, 0],
+            [5, 5, 1, 0],
+            [12, 3, 3, 1],
+            [5, -3, 3, 1],
+            [8, -3, 1, 0],
+            [5, -3, 1, 0],
+            [11, -3, 3, 0],
+            [3, 5, 3, 0],
+            [13, -4, 1, 0],
+            [3, 1, 0, 0]
+        ];
+    }
+
+    for (i, move_array) in move_array_array.iter_mut().enumerate() {
+        println!("Move number {i}");
+
+        print!("Calculated position: [");
+        for element in calculate_position(&board, &info_matrix, &move_array) {
+            print!("{}, ", element);
+        }
+        print!("]");
+        println!();
+
+        if make_move(
+            &mut board,
+            &mut info_matrix,
+            &is_white_player,
+            &move_array,
+        ) == true
+        {
+            println!();
+            println!();
+            println!("Exited with code 1");
+            println!();
+            println!();
+        }
+        is_white_player = !is_white_player;
+        display_info(&board, &info_matrix);
+        println!("Cube counter: {}", count_cubes(&board));
+        println!("Info matrix length: {}", info_matrix.len());
+        println!();
+        println!();
+        // for legal in get_legal_moves(&board, &info_matrix, is_white_player) {
+        //     display_move_array(&legal);
+        // }
+    }
+}
 pub fn dev_mode () {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     println!("What do you want to do?");
     println!("1: Play a sample game");
     println!("2: Print all legal moves");
-    println!("3: Test different bot versions");
-    println!("3: Exit");
+    println!("3: Test the time it takes for something to happen");
+    println!("4: Exit");
     let mut input= String::new();
     io::stdin().read_line(&mut input).expect("Failed to read line");
     let purpose: i32 = match input.trim().parse() {
@@ -95,7 +170,7 @@ pub fn dev_mode () {
         display_legal_moves();
     }
     if purpose == 3 {
-        test_different_bot_versions();
+
     }
     if purpose == 4 {
         exit(0);

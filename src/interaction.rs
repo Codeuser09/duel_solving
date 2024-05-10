@@ -1,123 +1,12 @@
 use std::io;
-use std::process::exit;
-use dialoguer::Confirm;
 use crate::cube::{make_move, MoveArray};
 use crate::game::{Board, InfoMatrix, generate_startpos, generate_info_matrix};
-use crate::display::{display_info, display_board, display_tops, display_ids, display_move_array, input_number, confirmation};
+use crate::display::{display_board, display_tops, display_ids, input_number, confirmation};
 use crate::legal_move_iteration::{get_possible_moves, get_possible_boards};
-use crate::libcube::{count_cubes};
 use crate::evaluation::{evaluate_position, is_won};
-use crate::minimax::{_mt_map_minimax, minimax};
+use crate::minimax::{minimax};
 
-pub fn play_sample_game() {
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    println!("What sample game do you want to play?");
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line");
-    let example_game: i32 = match input.trim().parse() {
-        Ok(num) => num,
-        Err(_) => panic!(),
-    };
-    let mut board: Board = generate_startpos();
-    let mut info_matrix: InfoMatrix = generate_info_matrix(board);
 
-    let mut is_white_player = true;
-    //move_array = [cube_id, forward_fields, turn_direction, is_sideways];
-
-    let mut move_array_array = vec![];
-
-    if example_game == 1 {
-        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [17, -3, 1, 1]]; //Simply white taking the king
-    }
-    if example_game == 2 {
-        move_array_array = vec![[17, -4, 3, 0], [0, 4, 3, 0], [16, 0, 2, 0], [0, 3, 1, 1]]; //Simply black taking the king
-    }
-    if example_game == 3 {
-        move_array_array = vec![ //Black's king ending up on the winning square
-            [13, 0, 2, 0],
-            [0, 4, 0, 0],
-            [10, 0, 2, 0],
-            [5, 1, 1, 0],
-            [16, 0, 2, 0],
-            [3, 1, 3, 0],
-            [13, 0, 2, 0],
-            [4, 0, 0, 0],
-            [13, 0, 2, 0],
-            [4, 0, 0, 0],
-            [13, 0, 2, 0],
-            [4, 0, 1, 0],
-            [13, 0, 2, 0],
-            [4, 0, 1, 0],
-            [13, 0, 2, 0],
-            [4, 0, 1, 0],
-            [13, 0, 2, 0],
-        ];
-    }
-    if example_game == 4 {
-        move_array_array = vec![ //White's king ending up on the winning square
-        [13, 0, 2, 0],
-        [0, 4, 0, 0],
-        [10, 0, 2, 0],
-        [5, 1, 1, 0],
-        [16, 0, 2, 0],
-        [3, 1, 3, 0],
-        [13, 0, 2, 0],
-        [4, 0, 0, 0],
-        [13, 0, 2, 0],
-        [4, 0, 0, 0],
-        [13, 0, 3, 0],
-        [4, 0, 0, 0],
-        [13, 0, 3, 0],
-        [4, 0, 0, 0],
-        [13, 0, 1, 0],
-        [4, 0, 0, 0],
-        [13, 0, 3, 0],
-        [4, 0, 0, 0],
-        [13, 0, 3, 0],
-        [4, 0, 0, 0],
-        ]
-    }
-    if example_game == 5 {
-        move_array_array = vec![
-            [12, -5, 1, 0],
-            [5, 5, 1, 0],
-            [12, 3, 3, 1],
-            [5, -3, 3, 1],
-            [8, -3, 1, 0],
-            [5, -3, 1, 0],
-            [11, -3, 3, 0],
-            [3, 5, 3, 0],
-            [13, -4, 0, 0],
-            [3, 0, 0, 0]
-        ];
-    }
-
-    for (i, move_array) in move_array_array.iter_mut().enumerate() {
-        println!("Move number {i}");
-        if make_move(
-            &mut board,
-            &mut info_matrix,
-            &is_white_player,
-            &move_array,
-        ) == true
-        {
-            println!();
-            println!();
-            println!("Exited with code 1");
-            println!();
-            println!();
-        }
-        is_white_player = !is_white_player;
-        display_info(&board, &info_matrix);
-        println!("Cube counter: {}", count_cubes(&board));
-        println!("Info matrix length: {}", info_matrix.len());
-        println!();
-        println!();
-        // for legal in get_legal_moves(&board, &info_matrix, is_white_player) {
-        //     display_move_array(&legal);
-        // }
-    }
-}
 
 fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveArray {
     loop {
@@ -125,10 +14,6 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
         display_tops(&board);
         display_ids(&info_matrix, *is_white);
         println!();
-
-        let mut input = String::new();
-
-        // Ask for cube ID
 
         let cube_id = input_number(String::from("Enter the cube ID (0-17): "));
         let legal_moves = get_possible_moves(&board, &info_matrix, *is_white);
@@ -144,7 +29,7 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
             continue
         }
 
-        for (i, legal_board) in get_possible_boards(&board, &info_matrix, is_white, &legal_cube_moves).iter().enumerate() {
+        for (i, legal_board) in get_possible_boards(&board, &info_matrix, is_white, &mut legal_cube_moves).iter().enumerate() {
             println!();
             println!("Move number: {i}");
             display_tops(&legal_board);

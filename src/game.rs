@@ -25,7 +25,7 @@ fn generate_startcubes() -> (Cube, Cube, Cube, Cube, Cube, Cube) {
 
 fn black_cube_row(cube_row: [Cube; 9]) -> [Cube; 9] {
     let mut cube_row_b = cube_row.clone();
-    for (i, cube) in cube_row_b.iter_mut().enumerate() {
+    for cube in cube_row_b.iter_mut() {
         let mut new_cube = cube.clone();
         roll(-2, 1, &mut new_cube);
         roll(-2, 0, &mut new_cube);
