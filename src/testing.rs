@@ -5,6 +5,7 @@ use crate::display::{display_info, display_move_array};
 use crate::game::{Board, generate_info_matrix, generate_startpos, InfoMatrix};
 use crate::legal_move_iteration::{get_possible_moves};
 use crate::libcube::{calculate_position, count_cubes};
+use crate::minimax::is_interesting;
 
 pub fn display_legal_moves () {
     println!("Do you want to print white's (1) or black's legal moves (0)");
@@ -64,16 +65,15 @@ pub fn play_sample_game() {
                                  [16, 0, 2, 0],
                                  [3, 1, 3, 0],
                                  [13, 0, 2, 0],
-                                 [4, 0, 0, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 2, 0],
-                                 [4, 0, 0, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 2, 0],
-                                 [4, 0, 1, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 2, 0],
-                                 [4, 0, 1, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 2, 0],
-                                 [4, 0, 1, 0],
-                                 [13, 0, 2, 0],
+                                 [4, 1, 3, 0],
         ];
     }
     if example_game == 4 {
@@ -85,19 +85,19 @@ pub fn play_sample_game() {
                                  [16, 0, 2, 0],
                                  [3, 1, 3, 0],
                                  [13, 0, 2, 0],
-                                 [4, 0, 0, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 2, 0],
-                                 [4, 0, 0, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 3, 0],
-                                 [4, 0, 0, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 3, 0],
-                                 [4, 0, 0, 0],
+                                 [4, 1, 3, 0],
                                  [13, 0, 1, 0],
-                                 [4, 0, 0, 0],
+                                 [4, 1, 3, 0],
                                  [13, 1, 3, 0],
-                                 [4, 1, 1, 0],
+                                 [4, 1, 3, 0],
                                  [13, 1, 3, 0],
-                                 [4, 2, 3, 0],
+                                 [4, 1, 3, 0],
         ]
     }
     if example_game == 5 {
@@ -124,6 +124,7 @@ pub fn play_sample_game() {
         }
         print!("]");
         println!();
+        println!("Is the move interesting? {}", is_interesting(&board, &info_matrix, move_array, is_white_player));
 
         if make_move(
             &mut board,
@@ -135,8 +136,7 @@ pub fn play_sample_game() {
             println!();
             println!();
             println!("Exited with code 1");
-            println!();
-            println!();
+            panic!("");
         }
         is_white_player = !is_white_player;
         display_info(&board, &info_matrix);

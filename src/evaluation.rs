@@ -45,13 +45,12 @@ pub fn is_won (info_matrix: &InfoMatrix) -> i32 {
     return 0;
 }
 
-fn get_distance (vec1: [i32; 2], vec2: [i32; 2]) -> f64 {
+pub fn get_distance (vec1: [i32; 2], vec2: [i32; 2]) -> f64 {
     let difference : [f64; 2] = [vec1[0] as f64 - vec2[0] as f64, vec1[1] as f64 - vec2[1] as f64];
-    let squared_added_difference: f64 = difference[0].powf(2f64) as f64 + difference[1].powf(2f64) as f64;
-    return squared_added_difference.sqrt();
+    return difference[0].abs() + difference[1].abs();
 }
 
-fn winning_square_distance (info_matrix: &InfoMatrix) -> f64 {
+pub fn winning_square_distance (info_matrix: &InfoMatrix) -> f64 {
     let w_winning_square = [0, 4] ;
     let b_winning_square = [7, 4];
 

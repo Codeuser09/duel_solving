@@ -6,7 +6,6 @@ use crate::game::{Board, InfoMatrix};
 use crate::libcube::get_top;
 
 pub fn display_move_array(move_array: &MoveArray) {
-    println!();
     print!("[");
     for element in move_array {
         print!("{element},");

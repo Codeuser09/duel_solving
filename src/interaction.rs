@@ -1,7 +1,7 @@
 use std::io;
 use crate::cube::{make_move, MoveArray};
 use crate::game::{Board, InfoMatrix, generate_startpos, generate_info_matrix};
-use crate::display::{display_board, display_tops, display_ids, input_number, confirmation};
+use crate::display::{display_board, display_tops, display_ids, input_number, confirmation, display_move_array};
 use crate::legal_move_iteration::{get_possible_moves, get_possible_boards};
 use crate::evaluation::{evaluate_position, is_won};
 use crate::minimax::{minimax};
@@ -19,7 +19,7 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
         let legal_moves = get_possible_moves(&board, &info_matrix, *is_white);
         let mut legal_cube_moves = vec![];
         for legal_move in legal_moves {
-            if legal_move[0] == cube_id as i32 {
+            if legal_move[0] == cube_id {
                 legal_cube_moves.push(legal_move)
             }
         }
@@ -60,6 +60,11 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
     }
 }
 
+fn get_bot_move (board: &Board, info_matrix: &InfoMatrix, depth: i32, is_white: bool) -> (MoveArray, f64) {
+    let bot_move = minimax(&board, &info_matrix, depth, depth, f64::NEG_INFINITY, f64::INFINITY, is_white);
+    return  bot_move
+}
+
 
 pub fn play_bvh_game() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -79,10 +84,11 @@ pub fn play_bvh_game() {
         if is_white == true {
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             println!("Bot is thinking");
-            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true, true);
+            let bot_move = get_bot_move(&board, &info_matrix, depth, is_white);
             make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
         }
         else {
+            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             let player_move = get_input(&board, &info_matrix, &false);
             make_move(&mut board, &mut info_matrix, &false, &player_move);
         }
@@ -109,18 +115,14 @@ pub fn play_bvb_game() {
     while is_won(&info_matrix) == 0 {
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        if is_white == true {
-            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, true, true);
-            make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
-            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-            print!("Bot evaluation: {}, ", bot_move.1);
-        } else {
-            let bot_move = minimax(&board, &info_matrix, depth, f64::NEG_INFINITY, f64::INFINITY, false, true);
-            make_move(&mut board, &mut info_matrix, &false, &bot_move.0);
-            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-            print!("Bot evaluation: {}, ", bot_move.1);
-        }
-        println!("Static evaluation: {}", evaluate_position(&board, &info_matrix));
+        let bot_move = get_bot_move(&board, &info_matrix, depth, is_white);
+        make_move(&mut board, &mut info_matrix, &is_white, &bot_move.0);
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        print!("Bot evaluation: {}", bot_move.1);
+        print!(", Static evaluation: {}", evaluate_position(&board, &info_matrix));
+        print!(", Bot move: ");
+        display_move_array(&bot_move.0);
+        println!();
         is_white = !is_white;
         display_board(&board);
         println!();
