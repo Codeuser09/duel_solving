@@ -3,7 +3,7 @@ use crate::cube::{make_move, MoveArray};
 use crate::game::{Board, InfoMatrix};
 use crate::libcube::{get_top};
 
-fn discard_legal_moves(
+pub fn discard_legal_moves(
     board: &Board,
     info_matrix: &InfoMatrix,
     possible_moves: &mut Vec<MoveArray>,

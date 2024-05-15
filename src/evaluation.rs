@@ -1,6 +1,8 @@
 use crate::game::{Board, InfoMatrix};
-use crate::legal_move_iteration::get_possible_moves;
+use crate::legal_move_iteration::{discard_legal_moves, get_possible_moves};
 use crate::libcube::get_top;
+use crate::minimax::is_interesting;
+
 fn cube_amount_evaluation(info_matrix: &InfoMatrix) -> f64 {
     let mut w_cube_amount = 0f64;
     let mut b_cube_amount = 0f64;
@@ -72,8 +74,7 @@ pub fn winning_square_distance(info_matrix: &InfoMatrix) -> f64 {
     }
     // println!("w_distance: {}, b_distance: {}, Winning square distance eval: {}", w_distance, b_distance, w_distance - b_distance);
     let winning_square_distance = b_distance - w_distance;
-    return winning_square_distance.powf(winning_square_distance)
-        * winning_square_distance.signum();
+    return winning_square_distance;
     //Inverted because a smaller distance is good
 }
 
@@ -98,10 +99,12 @@ pub fn legal_move_total(board: &Board, info_matrix: &InfoMatrix) -> f64 {
         - get_possible_moves(&board, &info_matrix, false).len() as f64;
 }
 
-pub fn distance_to_enemy_king(info_matrix: &InfoMatrix) -> f64 {
-    let mut distance_eval = 0f64;
+pub fn king_distance (info_matrix: &InfoMatrix) -> (f64, f64) {
+    let mut distance_to_your_king = 0f64;
+    let mut distance_to_enemy_king = 0f64;
     let mut w_king_pos = [0, 4];
     let mut b_king_pos = [7, 4];
+
     for cube in info_matrix {
         if cube[2] == 1 {
             if cube[3] == 1 {
@@ -114,45 +117,42 @@ pub fn distance_to_enemy_king(info_matrix: &InfoMatrix) -> f64 {
 
     for cube in info_matrix {
         if cube[3] == 1 {
-            distance_eval += get_distance([cube[0], cube[1]], b_king_pos).abs();
+            distance_to_enemy_king += get_distance([cube[0], cube[1]], b_king_pos).abs();
+            distance_to_your_king += get_distance([cube[0], cube[1]], w_king_pos).abs();
         } else {
-            distance_eval -= get_distance([cube[0], cube[1]], w_king_pos).abs();
+            distance_to_enemy_king -= get_distance([cube[0], cube[1]], w_king_pos).abs();
+            distance_to_your_king -= get_distance([cube[0], cube[1]], b_king_pos).abs();
         }
     }
-    return distance_eval;
+    return (distance_to_your_king, distance_to_enemy_king);
 }
 
-pub fn distance_to_own_king(info_matrix: &InfoMatrix) -> f64 {
-    let mut distance_eval = 0f64;
-    let mut w_king_pos = [0, 4];
-    let mut b_king_pos = [7, 4];
-    for cube in info_matrix {
-        if cube[2] == 1 {
-            if cube[3] == 1 {
-                w_king_pos = [cube[0], cube[1]];
-            } else {
-                b_king_pos = [cube[0], cube[1]];
-            }
-        }
+fn interesting_move_amount (board: &Board, info_matrix: &InfoMatrix) -> f64 {
+    let mut w_possible_moves = get_possible_moves(&board, &info_matrix, true);
+    let mut b_possible_moves = get_possible_moves(&board, &info_matrix, false);
+    let mut interesting_move_total = 0f64;
+    discard_legal_moves(&board, &info_matrix, &mut w_possible_moves, &true);
+    discard_legal_moves(&board, &info_matrix, &mut b_possible_moves, &false);
+    for legal_move in w_possible_moves {
+        if is_interesting(&board, &info_matrix, &legal_move, true) == true { interesting_move_total += 1f64; }
     }
-
-    for cube in info_matrix {
-        if cube[3] == 1 {
-            distance_eval += get_distance([cube[0], cube[1]], w_king_pos).abs();
-        } else {
-            distance_eval -= get_distance([cube[0], cube[1]], b_king_pos).abs();
-        }
+    for legal_move in b_possible_moves {
+        if is_interesting(&board, &info_matrix, &legal_move, false) == true { interesting_move_total -= 1f64; }
     }
-    return distance_eval;
+    return interesting_move_total;
 }
 
 pub fn evaluate_position(board: &Board, info_matrix: &InfoMatrix) -> f64 {
     let mut evaluation = 0f64;
+    let (distance_to_your_king, distance_to_enemy_king) = king_distance(&info_matrix);
+
     evaluation += cube_amount_evaluation(info_matrix);
     evaluation += winning_square_distance(&info_matrix);
     evaluation += legal_move_total(&board, &info_matrix);
     evaluation += top_value_total(&board, &info_matrix);
-    evaluation += distance_to_enemy_king(&info_matrix);
-    evaluation += distance_to_own_king(&info_matrix);
+    evaluation += distance_to_your_king;
+    evaluation += distance_to_enemy_king;
+    evaluation += interesting_move_amount(&board, &info_matrix);
+
     return evaluation;
 }

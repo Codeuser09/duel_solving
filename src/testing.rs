@@ -2,10 +2,9 @@ use std::io;
 use std::process::exit;
 use crate::cube::make_move;
 use crate::display::{display_info, display_move_array};
+use crate::evaluation::evaluate_position;
 use crate::game::{Board, generate_info_matrix, generate_startpos, InfoMatrix};
 use crate::legal_move_iteration::{get_possible_moves};
-use crate::libcube::{calculate_position, count_cubes};
-use crate::minimax::is_interesting;
 
 pub fn display_legal_moves () {
     println!("Do you want to print white's (1) or black's legal moves (0)");
@@ -115,16 +114,10 @@ pub fn play_sample_game() {
         ];
     }
 
+    println!("Static evaluation at start pos: {}", evaluate_position(&board, &info_matrix));
+    println!();
     for (i, move_array) in move_array_array.iter_mut().enumerate() {
         println!("Move number {i}");
-
-        print!("Calculated position: [");
-        for element in calculate_position(&board, &info_matrix, &move_array) {
-            print!("{}, ", element);
-        }
-        print!("]");
-        println!();
-        println!("Is the move interesting? {}", is_interesting(&board, &info_matrix, move_array, is_white_player));
 
         if make_move(
             &mut board,
@@ -140,8 +133,7 @@ pub fn play_sample_game() {
         }
         is_white_player = !is_white_player;
         display_info(&board, &info_matrix);
-        println!("Cube counter: {}", count_cubes(&board));
-        println!("Info matrix length: {}", info_matrix.len());
+        println!("Static evaluation: {}", evaluate_position(&board, &info_matrix));
         println!();
         println!();
         // for legal in get_legal_moves(&board, &info_matrix, is_white_player) {
