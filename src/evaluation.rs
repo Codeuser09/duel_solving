@@ -1,3 +1,4 @@
+use crate::cube::MoveArray;
 use crate::game::{Board, InfoMatrix};
 use crate::legal_move_iteration::{discard_legal_moves, get_possible_moves};
 use crate::libcube::get_top;
@@ -79,27 +80,20 @@ pub fn winning_square_distance(info_matrix: &InfoMatrix) -> f64 {
 }
 
 pub fn top_value_total(board: &Board, info_matrix: &InfoMatrix) -> f64 {
-    let mut white_total = 0;
-    let mut black_total = 0;
+    let mut top_value_eval = 0f64;
 
     for cube in info_matrix {
         let cube_pos_x: usize = cube[0] as usize;
         let cube_pos_y: usize = cube[1] as usize;
         if cube[3] == 1 {
-            white_total += get_top(&board[cube_pos_x][cube_pos_y]);
+            top_value_eval += get_top(&board[cube_pos_x][cube_pos_y]) as f64;
         } else {
-            black_total += get_top(&board[cube_pos_x][cube_pos_y]);
+            top_value_eval -= get_top(&board[cube_pos_x][cube_pos_y]) as f64;
         }
     }
-    return white_total as f64 - black_total as f64;
+    return top_value_eval;
 }
-
-pub fn legal_move_total(board: &Board, info_matrix: &InfoMatrix) -> f64 {
-    return get_possible_moves(&board, &info_matrix, true).len() as f64
-        - get_possible_moves(&board, &info_matrix, false).len() as f64;
-}
-
-pub fn king_distance (info_matrix: &InfoMatrix) -> (f64, f64) {
+pub fn king_distance(info_matrix: &InfoMatrix) -> (f64, f64) {
     let mut distance_to_your_king = 0f64;
     let mut distance_to_enemy_king = 0f64;
     let mut w_king_pos = [0, 4];
@@ -117,42 +111,65 @@ pub fn king_distance (info_matrix: &InfoMatrix) -> (f64, f64) {
 
     for cube in info_matrix {
         if cube[3] == 1 {
-            distance_to_enemy_king += get_distance([cube[0], cube[1]], b_king_pos).abs();
-            distance_to_your_king += get_distance([cube[0], cube[1]], w_king_pos).abs();
+            distance_to_enemy_king -= get_distance([cube[0], cube[1]], b_king_pos).abs();
+            distance_to_your_king -= get_distance([cube[0], cube[1]], w_king_pos).abs();
         } else {
-            distance_to_enemy_king -= get_distance([cube[0], cube[1]], w_king_pos).abs();
-            distance_to_your_king -= get_distance([cube[0], cube[1]], b_king_pos).abs();
+            distance_to_enemy_king += get_distance([cube[0], cube[1]], w_king_pos).abs();
+            distance_to_your_king += get_distance([cube[0], cube[1]], b_king_pos).abs();
         }
     }
     return (distance_to_your_king, distance_to_enemy_king);
 }
 
-fn interesting_move_amount (board: &Board, info_matrix: &InfoMatrix) -> f64 {
-    let mut w_possible_moves = get_possible_moves(&board, &info_matrix, true);
-    let mut b_possible_moves = get_possible_moves(&board, &info_matrix, false);
+fn interesting_move_amount(
+    board: &Board,
+    info_matrix: &InfoMatrix,
+    w_legal_moves: &Vec<MoveArray>,
+    b_legal_moves: &Vec<MoveArray>,
+) -> f64 {
     let mut interesting_move_total = 0f64;
-    discard_legal_moves(&board, &info_matrix, &mut w_possible_moves, &true);
-    discard_legal_moves(&board, &info_matrix, &mut b_possible_moves, &false);
-    for legal_move in w_possible_moves {
-        if is_interesting(&board, &info_matrix, &legal_move, true) == true { interesting_move_total += 1f64; }
+
+    for legal_move in w_legal_moves {
+        if is_interesting(&board, &info_matrix, &legal_move, true) == true {
+            interesting_move_total += 1f64;
+        }
     }
-    for legal_move in b_possible_moves {
-        if is_interesting(&board, &info_matrix, &legal_move, false) == true { interesting_move_total -= 1f64; }
+    for legal_move in b_legal_moves {
+        if is_interesting(&board, &info_matrix, &legal_move, false) == true {
+            interesting_move_total -= 1f64;
+        }
     }
     return interesting_move_total;
 }
 
-pub fn evaluate_position(board: &Board, info_matrix: &InfoMatrix) -> f64 {
+pub fn evaluate_position(
+    board: &Board,
+    info_matrix: &InfoMatrix,
+    cube_amount_weight: f64,
+    winning_square_weight: f64,
+    legal_move_weight: f64,
+    top_value_weight: f64,
+    distance_to_own_king_weight: f64,
+    distance_to_enemy_king_weight: f64,
+    interesting_move_weight: f64,
+) -> f64 {
     let mut evaluation = 0f64;
+
+    let mut w_legal_moves = get_possible_moves(&board, &info_matrix, true);
+    let mut b_legal_moves = get_possible_moves(&board, &info_matrix, false);
+    discard_legal_moves(&board, &info_matrix, &mut w_legal_moves, &true);
+    discard_legal_moves(&board, &info_matrix, &mut b_legal_moves, &false);
+
     let (distance_to_your_king, distance_to_enemy_king) = king_distance(&info_matrix);
 
-    evaluation += cube_amount_evaluation(info_matrix);
-    evaluation += winning_square_distance(&info_matrix);
-    evaluation += legal_move_total(&board, &info_matrix);
-    evaluation += top_value_total(&board, &info_matrix);
-    evaluation += distance_to_your_king;
-    evaluation += distance_to_enemy_king;
-    evaluation += interesting_move_amount(&board, &info_matrix);
+    evaluation += cube_amount_evaluation(info_matrix) * cube_amount_weight;
+    evaluation += winning_square_distance(&info_matrix) * winning_square_weight;
+    evaluation += w_legal_moves.len() as f64 - b_legal_moves.len() as f64 * legal_move_weight;
+    evaluation += (top_value_total(&board, &info_matrix)) * top_value_weight;
+    evaluation += distance_to_your_king * distance_to_own_king_weight;
+    evaluation += distance_to_enemy_king * distance_to_enemy_king_weight;
+    evaluation += interesting_move_amount(&board, &info_matrix, &w_legal_moves, &b_legal_moves)
+        * interesting_move_weight;
 
     return evaluation;
 }

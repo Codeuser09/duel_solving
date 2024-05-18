@@ -1,13 +1,14 @@
 use crate::game::Board;
 use crate::game::InfoMatrix;
 use crate::legality_check::{is_illegal_move, is_illegal_operation, is_oob};
-use crate::libcube::{change_direction, get_top, place_cube, roll_after_dir_change, roll_before_dir_change};
+use crate::libcube::{
+    change_direction, get_top, place_cube, roll_after_dir_change, roll_before_dir_change,
+};
 
 pub type Cube = [[i32; 4]; 2];
 pub type MoveArray = [i32; 4];
 
-
-pub fn roll (shift: i32, is_sw: usize, ring_matrix: &mut Cube) {
+pub fn roll(shift: i32, is_sw: usize, ring_matrix: &mut Cube) {
     let actual_shift = shift % 4;
     if actual_shift != 0 {
         if shift < 0 {
@@ -22,17 +23,16 @@ pub fn roll (shift: i32, is_sw: usize, ring_matrix: &mut Cube) {
     }
 }
 
-
 pub fn make_move(
     board: &mut Board,
     info_matrix: &mut InfoMatrix,
     is_white_player: &bool,
     move_array: &MoveArray,
 ) -> bool {
-
-
     let [mut cube_id, forward_fields, turn_direction, mut is_sw] = move_array;
-    if info_matrix[cube_id as usize][3] != *is_white_player as i32  { return true; }
+    if info_matrix[cube_id as usize][3] != *is_white_player as i32 {
+        return true;
+    }
 
     let original_position = [
         info_matrix[cube_id as usize][0] as usize,
@@ -52,7 +52,7 @@ pub fn make_move(
 
     let board_before = board.clone();
 
-     roll_before_dir_change(
+    roll_before_dir_change(
         &is_sw,
         &forward_fields,
         turn_direction,
@@ -62,10 +62,12 @@ pub fn make_move(
     );
 
     for i in 0..available_moves {
-        if *turn_direction != 0 && i == *forward_fields || *turn_direction != 0 && i == -forward_fields
+        if *turn_direction != 0 && i == *forward_fields
+            || *turn_direction != 0 && i == -forward_fields
         {
-            (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
-             roll_after_dir_change(
+            (is_sw, forward_direction) =
+                change_direction(&turn_direction, &is_sw, &forward_direction);
+            roll_after_dir_change(
                 &is_sw,
                 &forward_fields,
                 available_moves,
@@ -80,7 +82,8 @@ pub fn make_move(
             &forward_direction,
             &forward_fields,
             &available_moves,
-        ) == true {
+        ) == true
+        {
             return true;
         }
 

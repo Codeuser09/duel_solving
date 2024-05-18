@@ -1,9 +1,9 @@
-use std::io;
-use dialoguer::Confirm;
 use crate::cube::MoveArray;
 use crate::evaluation::is_won;
 use crate::game::{Board, InfoMatrix};
 use crate::libcube::get_top;
+use dialoguer::Confirm;
+use std::io;
 
 pub fn display_move_array(move_array: &MoveArray) {
     print!("[");
@@ -67,7 +67,7 @@ pub fn display_info_matrix(index_matrix: &InfoMatrix) {
 }
 
 pub fn display_ids(info_matrix: &InfoMatrix, is_white: bool) {
-    let mut pseudo_board = [[100; 9];8];
+    let mut pseudo_board = [[100; 9]; 8];
     for (i, cube) in info_matrix.iter().enumerate() {
         if cube[3] == is_white as i32 {
             pseudo_board[cube[0] as usize][cube[1] as usize] = i;
@@ -93,10 +93,12 @@ pub fn display_ids(info_matrix: &InfoMatrix, is_white: bool) {
     }
 }
 
-pub fn input_number (input_string: String) -> i32 {
-    let mut input= String::new();
+pub fn input_number(input_string: String) -> i32 {
+    let mut input = String::new();
     println!("{}", input_string);
-    io::stdin().read_line(&mut input).expect("Failed to read line");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
     let number: i32 = match input.trim().parse() {
         Ok(num) => num,
         Err(_) => panic!(),
@@ -105,7 +107,7 @@ pub fn input_number (input_string: String) -> i32 {
     return number;
 }
 
-pub fn confirmation (confirmation_text: String, yes_text: String, no_text: String) -> bool {
+pub fn confirmation(confirmation_text: String, yes_text: String, no_text: String) -> bool {
     let confirmation = Confirm::new()
         .with_prompt(confirmation_text)
         .interact()

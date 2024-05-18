@@ -1,4 +1,4 @@
-use crate::cube::{Cube, MoveArray, roll};
+use crate::cube::{roll, Cube, MoveArray};
 use crate::game::{Board, InfoMatrix};
 
 pub fn _get_index(index: i32) -> usize {
@@ -75,13 +75,13 @@ pub fn roll_after_dir_change(
     forward_direction: i32,
 ) {
     if *is_sw == 1 {
-         roll(
+        roll(
             -(available_moves - forward_fields.abs()) * forward_direction,
             1,
             new_cube,
         );
     } else {
-         roll(
+        roll(
             (available_moves - forward_fields.abs()) * forward_direction,
             0,
             new_cube,
@@ -105,13 +105,13 @@ pub fn roll_before_dir_change(
         }
     } else {
         if *is_sw == 1 {
-             roll(
+            roll(
                 -available_moves * forward_direction,
                 *is_sw as usize,
                 original_cube,
             );
         } else {
-             roll(
+            roll(
                 available_moves * forward_direction,
                 *is_sw as usize,
                 original_cube,
@@ -120,28 +120,21 @@ pub fn roll_before_dir_change(
     }
 }
 
-
-pub fn count_cubes(board: &Board) -> i32 {
-    let mut counter = 0;
-    for row in board {
-        for cube in row {
-            if *cube != [[0; 4];2] {
-                counter += 1;
-            }
-        }
-    }
-    return counter
-}
-
 pub fn get_top(cube_matrix: &[[i32; 4]; 2]) -> i32 {
     cube_matrix[0][0]
 }
 
-
-pub fn calculate_position(board: &Board, info_matrix: &InfoMatrix, legal_move: &MoveArray) -> [i32; 2]{
+pub fn calculate_position(
+    board: &Board,
+    info_matrix: &InfoMatrix,
+    legal_move: &MoveArray,
+) -> [i32; 2] {
     let [cube_id, forward_fields, turn_direction, mut is_sw] = legal_move;
     let mut forward_direction = forward_fields.signum();
-    let mut new_position = [info_matrix[*cube_id as usize][0], info_matrix[*cube_id as usize][1]];
+    let mut new_position = [
+        info_matrix[*cube_id as usize][0],
+        info_matrix[*cube_id as usize][1],
+    ];
     let mut available_moves = get_top(&board[new_position[0] as usize][new_position[1] as usize]);
     new_position[is_sw as usize] += forward_fields;
     (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);

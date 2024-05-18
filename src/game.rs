@@ -84,4 +84,3 @@ pub fn generate_info_matrix(board: Board) -> InfoMatrix {
 
     info_matrix
 }
-

@@ -15,7 +15,8 @@ pub fn is_illegal_move(
     available_moves: &i32,
     cube_id: &i32,
     is_white_cube: &i32,
-) -> (bool, bool, usize) { //Returns (Is_illegal, removed_cube, removed_cube_position)
+) -> (bool, bool, usize) {
+    //Returns (Is_illegal, removed_cube, removed_cube_position)
     for (legality_check_loop_id, cube) in info_matrix.iter().enumerate() {
         if cube[0] == new_position[0] && cube[1] == new_position[1] {
             if *cube_id == available_moves - 1 || *cube_id == -available_moves + 1 {
@@ -29,20 +30,19 @@ pub fn is_illegal_move(
                 return (true, false, 0);
             }
         }
-
     }
     return (false, false, 0);
 }
 
-
-pub fn _is_illegal_move_var (
+pub fn _is_illegal_move_var(
     info_matrix: &InfoMatrix,
     new_position: &[i32; 2],
     available_moves: &i32,
     cube_id: &i32,
     is_white_cube: &i32,
-    is_white_player: &bool
-) -> bool { //Returns (Is_illegal)
+    is_white_player: &bool,
+) -> bool {
+    //Returns (Is_illegal)
     for cube in info_matrix {
         if cube[0] == new_position[0] && cube[1] == new_position[1] {
             if *cube_id == available_moves - 1 || *cube_id == -available_moves + 1 {
@@ -62,9 +62,17 @@ pub fn _is_illegal_move_var (
     return false;
 }
 
-pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, forward_fields: &i32, available_moves: &i32) -> bool {
+pub fn is_oob(
+    new_position: &[i32; 2],
+    is_sw: &i32,
+    forward_direction: &i32,
+    forward_fields: &i32,
+    available_moves: &i32,
+) -> bool {
     let maximum_value = get_maximum_value(is_sw);
-    if new_position[*is_sw as usize] + forward_direction > maximum_value || new_position[*is_sw as usize] + forward_direction < 0 {
+    if new_position[*is_sw as usize] + forward_direction > maximum_value
+        || new_position[*is_sw as usize] + forward_direction < 0
+    {
         return true;
     }
     if forward_fields.abs() > *available_moves {
@@ -73,7 +81,7 @@ pub fn is_oob(new_position: &[i32; 2], is_sw: &i32, forward_direction: &i32, for
     return false;
 }
 
-pub fn is_illegal_operation (move_array: &MoveArray, available_moves: &i32) -> bool {
+pub fn is_illegal_operation(move_array: &MoveArray, available_moves: &i32) -> bool {
     let [_, forward_fields, turn_direction, _] = move_array;
     if *available_moves == *forward_fields && *turn_direction == 1 {
         return true;
@@ -107,9 +115,11 @@ pub fn _check_legality(
     let is_white_cube = info_matrix[*cube_id as usize][3];
 
     for i in 0..available_moves {
-        if *turn_direction != 0 && i == *forward_fields || *turn_direction != 0 && i == -forward_fields
+        if *turn_direction != 0 && i == *forward_fields
+            || *turn_direction != 0 && i == -forward_fields
         {
-            (is_sw, forward_direction) = change_direction(&turn_direction, &is_sw, &forward_direction);
+            (is_sw, forward_direction) =
+                change_direction(&turn_direction, &is_sw, &forward_direction);
         }
 
         if is_oob(
@@ -118,20 +128,21 @@ pub fn _check_legality(
             &forward_direction,
             &forward_fields,
             &available_moves,
-        ) == true {
-        }
+        ) == true
+        {}
 
         //Setting up the new position
         new_position[is_sw as usize] += forward_direction;
 
-        if _is_illegal_move_var (
+        if _is_illegal_move_var(
             info_matrix,
             &new_position,
             &available_moves,
             &i,
             &is_white_cube,
             is_white_player,
-        ) == true {
+        ) == true
+        {
             return true;
         }
     }

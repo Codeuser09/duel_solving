@@ -1,18 +1,26 @@
-use std::io;
-use std::process::exit;
 use crate::interaction::{play_bvb_game, play_bvh_game, play_hvh_game};
 use crate::testing::dev_mode;
+use std::io;
+use std::process::exit;
 
 mod cube;
+mod display;
 mod evaluation;
 mod game;
+mod genetics;
+mod interaction;
 mod legal_move_iteration;
 mod legality_check;
 mod libcube;
-mod interaction;
 mod minimax;
-mod display;
 mod testing;
+const CUBE_AMOUNT_WEIGHT: f64 = 1f64;
+const WINNING_SQUARE_WEIGHT: f64 = 1f64;
+const LEGAL_MOVE_WEIGHT: f64 = 1f64;
+const TOP_VALUE_WEIGHT: f64 = 1f64;
+const DISTANCE_TO_OWN_KING_WEIGHT: f64 = 1f64;
+const DISTANCE_TO_ENEMY_KING_WEIGHT: f64 = 1f64;
+const INTERESTING_MOVE_WEIGHT: f64 = 1f64;
 
 fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -22,8 +30,10 @@ fn main() {
     println!("3: Let two bots play against each other");
     println!("4: Enter dev mode");
     println!("5: Exit");
-    let mut input= String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line");
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
     let purpose: i32 = match input.trim().parse() {
         Ok(num) => num,
         Err(_) => panic!(),
