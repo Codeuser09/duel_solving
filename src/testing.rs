@@ -2,6 +2,7 @@ use crate::cube::make_move;
 use crate::display::{display_info, display_move_array};
 use crate::evaluation::evaluate_position;
 use crate::game::{generate_info_matrix, generate_startpos, Board, InfoMatrix};
+use crate::genetics::init_population;
 use crate::legal_move_iteration::get_possible_moves;
 use std::io;
 use std::process::exit;
@@ -175,7 +176,7 @@ pub fn dev_mode() {
     println!("What do you want to do?");
     println!("1: Play a sample game");
     println!("2: Print all legal moves");
-    println!("3: Test the time it takes for something to happen");
+    println!("3: Test the init_population function");
     println!("4: Exit");
     let mut input = String::new();
     io::stdin()
@@ -192,7 +193,11 @@ pub fn dev_mode() {
     if purpose == 2 {
         display_legal_moves();
     }
-    if purpose == 3 {}
+    if purpose == 3 {
+        for bot in init_population() {
+            println!("{:?}", bot);
+        }
+    }
     if purpose == 4 {
         exit(0);
     }

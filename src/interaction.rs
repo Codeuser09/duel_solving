@@ -107,15 +107,9 @@ pub fn play_bvh_game() {
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
-    let mut input = String::new();
-    println!("Please enter the amount of moves that the bot should calculate into the future:");
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read line");
-    let depth: i32 = match input.trim().parse() {
-        Ok(num) => num,
-        Err(_) => panic!(),
-    };
+    let depth = input_number(String::from(
+        "Please enter the amount of moves that the bot should calculate into the future:",
+    ));
 
     while is_won(&info_matrix) == 0 {
         if is_white == true {
@@ -141,21 +135,23 @@ pub fn play_bvh_game() {
     );
 }
 
-pub fn play_bvb_game() {
+pub fn display_play_bvb_game(
+    cube_amount_weight: f64,
+    winning_square_weight: f64,
+    legal_move_weight: f64,
+    top_value_weight: f64,
+    distance_to_own_king_weight: f64,
+    distance_to_enemy_king_weight: f64,
+    interesting_move_weight: f64,
+) {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
-    let mut input = String::new();
-    println!("Please enter the amount of moves that the bot should calculate into the future:");
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read line");
-    let depth: i32 = match input.trim().parse() {
-        Ok(num) => num,
-        Err(_) => panic!(),
-    };
+    let depth = input_number(String::from(
+        "Please enter the amount of moves that the bot should calculate into the future:",
+    ));
 
     while is_won(&info_matrix) == 0 {
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
@@ -169,13 +165,13 @@ pub fn play_bvb_game() {
             evaluate_position(
                 &board,
                 &info_matrix,
-                CUBE_AMOUNT_WEIGHT,
-                WINNING_SQUARE_WEIGHT,
-                LEGAL_MOVE_WEIGHT,
-                TOP_VALUE_WEIGHT,
-                DISTANCE_TO_OWN_KING_WEIGHT,
-                DISTANCE_TO_ENEMY_KING_WEIGHT,
-                INTERESTING_MOVE_WEIGHT
+                cube_amount_weight,
+                winning_square_weight,
+                legal_move_weight,
+                top_value_weight,
+                distance_to_own_king_weight,
+                distance_to_enemy_king_weight,
+                interesting_move_weight
             )
         );
         print!(", Bot move: ");
@@ -194,6 +190,48 @@ pub fn play_bvb_game() {
             "Black won"
         }
     );
+}
+
+pub fn play_bvb_game(weight_array: (f64, f64, f64, f64, f64, f64, f64), depth: i32) {
+    let (
+        cube_amount_weight,
+        winning_square_weight,
+        legal_move_weight,
+        top_value_weight,
+        distance_to_own_king_weight,
+        distance_to_enemy_king_weight,
+        interesting_move_weight,
+    ) = weight_array;
+
+    let mut board: Board = generate_startpos();
+    let mut info_matrix: InfoMatrix = generate_info_matrix(board);
+    let mut is_white = true;
+
+    while is_won(&info_matrix) == 0 {
+        // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
+        let bot_move = get_bot_move(&board, &info_matrix, depth, is_white);
+        make_move(&mut board, &mut info_matrix, &is_white, &bot_move.0);
+        print!(
+            ", Static evaluation: {}",
+            evaluate_position(
+                &board,
+                &info_matrix,
+                cube_amount_weight,
+                winning_square_weight,
+                legal_move_weight,
+                top_value_weight,
+                distance_to_own_king_weight,
+                distance_to_enemy_king_weight,
+                interesting_move_weight
+            )
+        );
+        print!(", Bot move: ");
+        display_move_array(&bot_move.0);
+        println!();
+        is_white = !is_white;
+        display_board(&board);
+        println!();
+    }
 }
 
 pub fn play_hvh_game() {

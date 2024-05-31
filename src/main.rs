@@ -1,4 +1,4 @@
-use crate::interaction::{play_bvb_game, play_bvh_game, play_hvh_game};
+use crate::interaction::{display_play_bvb_game, play_bvb_game, play_bvh_game, play_hvh_game};
 use crate::testing::dev_mode;
 use std::io;
 use std::process::exit;
@@ -14,6 +14,7 @@ mod legality_check;
 mod libcube;
 mod minimax;
 mod testing;
+
 const CUBE_AMOUNT_WEIGHT: f64 = 1f64;
 const WINNING_SQUARE_WEIGHT: f64 = 1f64;
 const LEGAL_MOVE_WEIGHT: f64 = 1f64;
@@ -21,6 +22,10 @@ const TOP_VALUE_WEIGHT: f64 = 1f64;
 const DISTANCE_TO_OWN_KING_WEIGHT: f64 = 1f64;
 const DISTANCE_TO_ENEMY_KING_WEIGHT: f64 = 1f64;
 const INTERESTING_MOVE_WEIGHT: f64 = 1f64;
+
+const POP_SIZE: usize = 1000;
+const MUT_RATE: f64 = 0.1;
+const SIMULATION_DEPTH: i32 = 8;
 
 fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -45,7 +50,15 @@ fn main() {
         play_hvh_game();
     }
     if purpose == 3 {
-        play_bvb_game();
+        display_play_bvb_game(
+            CUBE_AMOUNT_WEIGHT,
+            DISTANCE_TO_ENEMY_KING_WEIGHT,
+            DISTANCE_TO_OWN_KING_WEIGHT,
+            INTERESTING_MOVE_WEIGHT,
+            LEGAL_MOVE_WEIGHT,
+            TOP_VALUE_WEIGHT,
+            WINNING_SQUARE_WEIGHT,
+        );
     }
     if purpose == 4 {
         dev_mode();
