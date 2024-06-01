@@ -10,7 +10,6 @@ use crate::{
     CUBE_AMOUNT_WEIGHT, DISTANCE_TO_ENEMY_KING_WEIGHT, DISTANCE_TO_OWN_KING_WEIGHT,
     INTERESTING_MOVE_WEIGHT, LEGAL_MOVE_WEIGHT, TOP_VALUE_WEIGHT, WINNING_SQUARE_WEIGHT,
 };
-use std::io;
 
 //These are just multipliers for the evaluation parameters and will be calculated by a genetic algo later
 
@@ -76,31 +75,6 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
     }
 }
 
-fn get_bot_move(
-    board: &Board,
-    info_matrix: &InfoMatrix,
-    depth: i32,
-    is_white: bool,
-) -> (MoveArray, f64) {
-    let bot_move = minimax(
-        &board,
-        &info_matrix,
-        depth,
-        depth,
-        f64::NEG_INFINITY,
-        f64::INFINITY,
-        is_white,
-        CUBE_AMOUNT_WEIGHT,
-        WINNING_SQUARE_WEIGHT,
-        LEGAL_MOVE_WEIGHT,
-        TOP_VALUE_WEIGHT,
-        DISTANCE_TO_OWN_KING_WEIGHT,
-        DISTANCE_TO_ENEMY_KING_WEIGHT,
-        INTERESTING_MOVE_WEIGHT,
-    );
-    return bot_move;
-}
-
 pub fn play_bvh_game() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     let mut board: Board = generate_startpos();
@@ -115,7 +89,22 @@ pub fn play_bvh_game() {
         if is_white == true {
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             println!("Bot is thinking");
-            let bot_move = get_bot_move(&board, &info_matrix, depth, is_white);
+            let bot_move = minimax(
+                &board,
+                &info_matrix,
+                depth,
+                depth,
+                f64::NEG_INFINITY,
+                f64::INFINITY,
+                is_white,
+                CUBE_AMOUNT_WEIGHT,
+                WINNING_SQUARE_WEIGHT,
+                LEGAL_MOVE_WEIGHT,
+                TOP_VALUE_WEIGHT,
+                DISTANCE_TO_OWN_KING_WEIGHT,
+                DISTANCE_TO_ENEMY_KING_WEIGHT,
+                INTERESTING_MOVE_WEIGHT,
+            );
             make_move(&mut board, &mut info_matrix, &true, &bot_move.0);
         } else {
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -156,7 +145,22 @@ pub fn display_play_bvb_game(
     while is_won(&info_matrix) == 0 {
         // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        let bot_move = get_bot_move(&board, &info_matrix, depth, is_white);
+        let bot_move = minimax(
+            &board,
+            &info_matrix,
+            depth,
+            depth,
+            f64::NEG_INFINITY,
+            f64::INFINITY,
+            is_white,
+            CUBE_AMOUNT_WEIGHT,
+            WINNING_SQUARE_WEIGHT,
+            LEGAL_MOVE_WEIGHT,
+            TOP_VALUE_WEIGHT,
+            DISTANCE_TO_OWN_KING_WEIGHT,
+            DISTANCE_TO_ENEMY_KING_WEIGHT,
+            INTERESTING_MOVE_WEIGHT,
+        );
         make_move(&mut board, &mut info_matrix, &is_white, &bot_move.0);
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         print!("Bot evaluation: {}", bot_move.1);
@@ -192,46 +196,77 @@ pub fn display_play_bvb_game(
     );
 }
 
-pub fn play_bvb_game(weight_array: (f64, f64, f64, f64, f64, f64, f64), depth: i32) {
+pub fn play_bvb_game(
+    w_weight_array: (f64, f64, f64, f64, f64, f64, f64),
+    b_weight_array: (f64, f64, f64, f64, f64, f64, f64),
+    depth: i32,
+) -> i32 {
     let (
-        cube_amount_weight,
-        winning_square_weight,
-        legal_move_weight,
-        top_value_weight,
-        distance_to_own_king_weight,
-        distance_to_enemy_king_weight,
-        interesting_move_weight,
-    ) = weight_array;
+        w_cube_amount_weight,
+        w_winning_square_weight,
+        w_legal_move_weight,
+        w_top_value_weight,
+        w_distance_to_own_king_weight,
+        w_distance_to_enemy_king_weight,
+        w_interesting_move_weight,
+    ) = w_weight_array;
+
+    let (
+        b_cube_amount_weight,
+        b_winning_square_weight,
+        b_legal_move_weight,
+        b_top_value_weight,
+        b_distance_to_own_king_weight,
+        b_distance_to_enemy_king_weight,
+        b_interesting_move_weight,
+    ) = b_weight_array;
 
     let mut board: Board = generate_startpos();
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
     while is_won(&info_matrix) == 0 {
-        // println!("Evaluation: {}", evaluate_position(&board, &info_matrix));
-        let bot_move = get_bot_move(&board, &info_matrix, depth, is_white);
-        make_move(&mut board, &mut info_matrix, &is_white, &bot_move.0);
-        print!(
-            ", Static evaluation: {}",
-            evaluate_position(
+        let bot_move: (MoveArray, f64);
+        if is_white {
+            bot_move = minimax(
                 &board,
                 &info_matrix,
-                cube_amount_weight,
-                winning_square_weight,
-                legal_move_weight,
-                top_value_weight,
-                distance_to_own_king_weight,
-                distance_to_enemy_king_weight,
-                interesting_move_weight
-            )
-        );
-        print!(", Bot move: ");
-        display_move_array(&bot_move.0);
-        println!();
+                depth,
+                depth,
+                f64::NEG_INFINITY,
+                f64::INFINITY,
+                is_white,
+                w_cube_amount_weight,
+                w_winning_square_weight,
+                w_legal_move_weight,
+                w_top_value_weight,
+                w_distance_to_own_king_weight,
+                w_distance_to_enemy_king_weight,
+                w_interesting_move_weight,
+            );
+        } else {
+            bot_move = minimax(
+                &board,
+                &info_matrix,
+                depth,
+                depth,
+                f64::NEG_INFINITY,
+                f64::INFINITY,
+                is_white,
+                b_cube_amount_weight,
+                b_winning_square_weight,
+                b_legal_move_weight,
+                b_top_value_weight,
+                b_distance_to_own_king_weight,
+                b_distance_to_enemy_king_weight,
+                b_interesting_move_weight,
+            );
+        }
+        make_move(&mut board, &mut info_matrix, &is_white, &bot_move.0);
         is_white = !is_white;
         display_board(&board);
-        println!();
     }
+    return is_won(&info_matrix);
 }
 
 pub fn play_hvh_game() {
