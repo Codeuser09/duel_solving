@@ -264,9 +264,8 @@ pub fn play_bvb_game(
         }
         make_move(&mut board, &mut info_matrix, &is_white, &bot_move.0);
         is_white = !is_white;
-        display_board(&board);
     }
-    return is_won(&info_matrix);
+    is_won(&info_matrix)
 }
 
 pub fn play_hvh_game() {

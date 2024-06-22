@@ -47,21 +47,28 @@ pub fn fight(
     reproduction_number: i32,
     population: &mut Vec<[f64; 7]>,
 ) {
-    let mut bot_id: usize = 0;
-    for _ in 0..generations {
-        while population.len() != 10 {
-            while bot_id as i32 != population.len() as i32 {
-                if play_bvb_game(
-                    population[bot_id as usize].into(),
-                    population[bot_id as usize + 1].into(),
-                    depth,
-                ) == 1
-                {
-                    population.remove(bot_id);
-                }
-                bot_id += 1;
+    while population.len() as i32 != reproduction_number {
+        // while population.len() as i32 != reproduction_number {
+        let mut new_population: Vec<[f64; 7]> = vec![];
+        let mut bot_id = 0;
+        while bot_id < population.len() {
+            new_population = vec![];
+            if play_bvb_game(
+                population[bot_id].into(),
+                population[bot_id + 1].into(),
+                depth,
+            ) == 1
+            {
+                // population.remove(bot_id);
+                new_population.push(population[bot_id]);
+            } else {
+                // population.remove(bot_id + 1);
+                new_population.push(population[bot_id + 1]);
             }
+            bot_id += 2;
         }
+        *population = new_population;
+        println!("Round 1 finished");
     }
 }
 
