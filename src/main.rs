@@ -1,3 +1,4 @@
+use crate::genetics::evolve;
 use crate::interaction::{display_play_bvb_game, play_bvh_game, play_hvh_game};
 use crate::testing::dev_mode;
 use std::io;
@@ -29,8 +30,9 @@ fn main() {
     println!("1: Play against a computer");
     println!("2: Play against another human");
     println!("3: Let two bots play against each other");
-    println!("4: Enter dev mode");
-    println!("5: Exit");
+    println!("4: Experiment with the genetic algorithm");
+    println!("5: Enter dev mode");
+    println!("6: Exit");
     let mut input = String::new();
     io::stdin()
         .read_line(&mut input)
@@ -57,9 +59,12 @@ fn main() {
         );
     }
     if purpose == 4 {
-        dev_mode();
+        evolve();
     }
     if purpose == 5 {
+        dev_mode();
+    }
+    if purpose == 6 {
         exit(0);
     }
 }
