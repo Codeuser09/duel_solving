@@ -1,6 +1,6 @@
 use crate::cube::{make_move, MoveArray};
 use crate::display::{
-    confirmation, display_board, display_ids, display_move_array, display_tops, input_number,
+    confirmation, display_board, display_ids, display_move_array, display_tops, input_int,
 };
 use crate::evaluation::{evaluate_position, is_won};
 use crate::game::{generate_info_matrix, generate_startpos, Board, InfoMatrix};
@@ -20,7 +20,7 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
         display_ids(&info_matrix, *is_white);
         println!();
 
-        let cube_id = input_number(String::from("Enter the cube ID (0-17): "));
+        let cube_id = input_int(String::from("Enter the cube ID (0-17): "));
         let legal_moves = get_possible_moves(&board, &info_matrix, *is_white);
         let mut legal_cube_moves = vec![];
         for legal_move in legal_moves {
@@ -44,7 +44,7 @@ fn get_input(board: &Board, info_matrix: &InfoMatrix, is_white: &bool) -> MoveAr
             display_tops(&legal_board);
         }
 
-        let move_index = input_number(String::from("Please enter the move you want to make"));
+        let move_index = input_int(String::from("Please enter the move you want to make"));
 
         // Return the move array
         let move_array = legal_cube_moves[move_index as usize];
@@ -81,7 +81,7 @@ pub fn play_bvh_game() {
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
-    let depth = input_number(String::from(
+    let depth = input_int(String::from(
         "Please enter the amount of moves that the bot should calculate into the future:",
     ));
 
@@ -138,7 +138,7 @@ pub fn display_play_bvb_game(
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
-    let depth = input_number(String::from(
+    let depth = input_int(String::from(
         "Please enter the amount of moves that the bot should calculate into the future:",
     ));
 

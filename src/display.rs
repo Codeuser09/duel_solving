@@ -93,18 +93,32 @@ pub fn display_ids(info_matrix: &InfoMatrix, is_white: bool) {
     }
 }
 
-pub fn input_number(input_string: String) -> i32 {
+pub fn input_int(input_string: String) -> i32 {
+    let mut input_int = String::new();
+    println!("{}", input_string);
+    io::stdin()
+        .read_line(&mut input_int)
+        .expect("Failed to read line");
+    let number: i32 = match input_int.trim().parse() {
+        Ok(num) => num,
+        Err(_) => panic!(),
+    };
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    number
+}
+
+pub fn input_float(input_string: String) -> f64 {
     let mut input = String::new();
     println!("{}", input_string);
     io::stdin()
         .read_line(&mut input)
         .expect("Failed to read line");
-    let number: i32 = match input.trim().parse() {
+    let number: f64 = match input.trim().parse() {
         Ok(num) => num,
         Err(_) => panic!(),
     };
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    return number;
+    number
 }
 
 pub fn confirmation(confirmation_text: String, yes_text: String, no_text: String) -> bool {

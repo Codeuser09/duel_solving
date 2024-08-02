@@ -1,21 +1,21 @@
-use crate::display::input_number;
+use crate::display::{input_float, input_int};
 use crate::interaction::play_bvb_game;
 use rand::Rng;
 
-fn get_genetic_variables() -> (i32, i32, i32, i32, i32) {
-    let depth = input_number(String::from(
+fn get_genetic_variables() -> (i32, i32, i32, f64, i32) {
+    let depth = input_int(String::from(
         "Please enter the amount of moves that the bot should calculate into the future:",
     ));
-    let pop_size = input_number(String::from(
+    let pop_size = input_int(String::from(
         "Please enter the amount of bots each generation should have",
     ));
-    let generations = input_number(String::from(
+    let generations = input_int(String::from(
         "Please enter the amount of generations the simulation should run for",
     ));
-    let mutation_rate = input_number(String::from(
+    let mutation_rate = input_float(String::from(
         "Please enter the random mutation added to each parameter of a child",
     ));
-    let reproduction_number = input_number(String::from(
+    let reproduction_number = input_int(String::from(
         "Please enter how many bots are allowed to reproduce",
     ));
     return (
@@ -67,13 +67,27 @@ fn elementwise_avg(array1: &[f64; 7], array2: &[f64; 7]) -> [f64; 7] {
     avg_array
 }
 
-fn reproduce(pop: &mut Vec<[f64; 7]>, pop_size: &i32, reproduction_number: &i32) {
-    for bot_id in 0..pop.len() {
-        if pop.len() == *pop_size as usize {
-            break;
+fn reproduce(pop: &mut Vec<[f64; 7]>, pop_size: &i32) {
+    while pop.len() < *pop_size as usize {
+        for bot_id in 0..pop.len() {
+            if pop.len() == *pop_size as usize {
+                break;
+            }
+            pop.push(elementwise_avg(
+                &pop[bot_id as usize],
+                &pop[(bot_id + 1) as usize],
+            ));
         }
-        let new_bot = elementwise_avg(&pop[bot_id as usize], &pop[(bot_id + 1) as usize]);
-        pop.push(new_bot);
+    }
+}
+
+fn mutate(pop: &mut Vec<[f64; 7]>, reproduction_number: &i32, mutation_rate: &f64) {
+    for (i, bot) in pop.iter_mut().enumerate() {
+        if i >= *reproduction_number as usize {
+            for gene in bot.iter_mut() {
+                *gene += rand::thread_rng().gen_range(-*mutation_rate..=*mutation_rate);
+            }
+        }
     }
 }
 
@@ -99,6 +113,7 @@ pub fn evolve() {
 
     for _ in 0..generations {
         fight(depth, &reproduction_number, &mut pop);
-        reproduce(&mut pop, &pop_size, &reproduction_number);
+        reproduce(&mut pop, &pop_size);
+        mutate(&mut pop, &reproduction_number, &mutation_rate);
     }
 }
