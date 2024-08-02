@@ -1,4 +1,4 @@
-use crate::interaction::{display_play_bvb_game, play_bvb_game, play_bvh_game, play_hvh_game};
+use crate::interaction::{display_play_bvb_game, play_bvh_game, play_hvh_game};
 use crate::testing::dev_mode;
 use std::io;
 use std::process::exit;
@@ -22,10 +22,6 @@ const TOP_VALUE_WEIGHT: f64 = 1f64;
 const DISTANCE_TO_OWN_KING_WEIGHT: f64 = 1f64;
 const DISTANCE_TO_ENEMY_KING_WEIGHT: f64 = 1f64;
 const INTERESTING_MOVE_WEIGHT: f64 = 1f64;
-
-const POP_SIZE: usize = 1000;
-const MUT_RATE: f64 = 0.1;
-const SIMULATION_DEPTH: i32 = 8;
 
 fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);

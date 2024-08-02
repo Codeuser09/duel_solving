@@ -2,7 +2,7 @@ use crate::cube::make_move;
 use crate::display::{display_info, display_move_array};
 use crate::evaluation::evaluate_position;
 use crate::game::{generate_info_matrix, generate_startpos, Board, InfoMatrix};
-use crate::genetics::{evolve, fight, init_population};
+use crate::genetics::evolve;
 use crate::legal_move_iteration::get_possible_moves;
 use std::io;
 use std::process::exit;
