@@ -47,12 +47,11 @@ pub fn fight(
     reproduction_number: i32,
     population: &mut Vec<[f64; 7]>,
 ) {
-    while population.len() as i32 != reproduction_number {
+    while population.len() as i32 > reproduction_number {
         // while population.len() as i32 != reproduction_number {
         let mut new_population: Vec<[f64; 7]> = vec![];
         let mut bot_id = 0;
         while bot_id < population.len() {
-            new_population = vec![];
             if play_bvb_game(
                 population[bot_id].into(),
                 population[bot_id + 1].into(),
@@ -75,10 +74,6 @@ pub fn fight(
 pub fn evolve() {
     let (depth, pop_size, generations, mutation_rate, reproduction_number) =
         get_genetic_variables();
-
-    if pop_size % 2 != 0 {
-        panic!("Pop_size must be divisible by 2 for the tournament elimination to work");
-    }
 
     let mut population = init_population(pop_size);
 
