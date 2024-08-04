@@ -1,13 +1,14 @@
 use std::error::Error;
 use std::time::{Duration, SystemTime};
 
-use crate::display::{input_float, input_int};
+use crate::display::{input_float, input_int, textless_confirmation};
 use crate::interaction::play_bvb_game;
 use csv::WriterBuilder;
 use rand::Rng;
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::fs::OpenOptions;
 
-fn get_genetic_variables() -> (i32, i32, i32, f64, i32) {
+fn get_genetic_variables() -> (i32, i32, i32, f64, i32, bool) {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     let depth = input_int(String::from(
         "Please enter the amount of moves that the bot should calculate into the future:",
@@ -24,12 +25,16 @@ fn get_genetic_variables() -> (i32, i32, i32, f64, i32) {
     let reproduction_number = input_int(String::from(
         "Please enter how many bots are allowed to reproduce",
     ));
+
+    let use_mp = textless_confirmation(String::from("Should it use multiprocessing?"));
+
     return (
         depth,
         pop_size,
         generations,
         mutation_rate,
         reproduction_number,
+        use_mp,
     );
 }
 
@@ -60,6 +65,24 @@ fn fight(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>) {
             }
             bot_id += 2;
         }
+        *pop = new_pop;
+    }
+}
+
+fn fight_par(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>) {
+    while pop.len() as i32 > *reproduction_number {
+        let new_pop: Vec<[f64; 7]> = (0..pop.len())
+            .into_par_iter()
+            .step_by(2)
+            .map(|bot_id| {
+                if play_bvb_game(pop[bot_id].into(), pop[bot_id + 1].into(), depth) == 1 {
+                    pop[bot_id]
+                } else {
+                    pop[bot_id + 1]
+                }
+            })
+            .collect();
+
         *pop = new_pop;
     }
 }
@@ -132,25 +155,22 @@ fn write_results(
     generations: &i32,
     mutation_rate: &f64,
     reproduction_number: &i32,
-    pop: &mut Vec<[f64; 7]>,
+    use_mp: &bool,
 ) {
     println!("");
     println!("");
     println!("The experiment took {} Seconds", elapsed.as_secs_f64());
-    println!("The hyperparameters were: Depth: {depth}, pop_size: {pop_size}, generations: {generations}, mutation_rate: {mutation_rate}, reproduction_number: {reproduction_number}");
+    println!("The hyperparameters were: Depth: {depth}, pop_size: {pop_size}, generations: {generations}, mutation_rate: {mutation_rate}, reproduction_number: {reproduction_number}, use multiprocessing: {use_mp}");
 
-    let string_data = convert_vec_to_string_vec(pop.clone());
-
-    let mut all_data = vec![
+    let all_data = vec![
         elapsed.as_secs_f64().to_string(),
         depth.to_string(),
         pop_size.to_string(),
         generations.to_string(),
         mutation_rate.to_string(),
         reproduction_number.to_string(),
+        use_mp.to_string(),
     ];
-
-    all_data.extend(string_data);
 
     let all_data_str: Vec<&str> = all_data.iter().map(AsRef::as_ref).collect();
 
@@ -160,13 +180,19 @@ fn write_results(
 fn write_generation(pop: &mut Vec<[f64; 7]>) {
     let string_data = convert_vec_to_string_vec(pop.clone());
     // Convert to Vec<&str> for the append_to_csv function
-    let all_data_str: Vec<&str> = string_data.iter().map(AsRef::as_ref).collect();
+    let mut all_data_str: Vec<&str> = string_data.iter().map(AsRef::as_ref).collect();
+
+    // Inserting empty string after each bot
+    for i in (0..all_data_str.len()).step_by(8) {
+        all_data_str.insert(i, &"");
+    }
+
     // Append all data to CSV as a single column
     let _ = append_to_csv("Generations.csv", &all_data_str);
 }
 
 pub fn evolve() {
-    let (depth, pop_size, generations, mutation_rate, reproduction_number) =
+    let (depth, pop_size, generations, mutation_rate, reproduction_number, use_mp) =
         get_genetic_variables();
 
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -191,7 +217,11 @@ pub fn evolve() {
     let _ = append_to_csv("Generations.csv", &[""]);
     write_generation(&mut pop);
     for i in 0..generations {
-        fight(depth, &reproduction_number, &mut pop);
+        if use_mp {
+            fight_par(depth, &reproduction_number, &mut pop);
+        } else {
+            fight(depth, &reproduction_number, &mut pop);
+        }
         println!("");
         println!("");
         println!("Winners of generation: {i}");
@@ -210,7 +240,7 @@ pub fn evolve() {
                 &generations,
                 &mutation_rate,
                 &reproduction_number,
-                &mut pop,
+                &use_mp,
             );
         }
         Err(e) => {

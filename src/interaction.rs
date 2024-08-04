@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::cube::{make_move, MoveArray};
 use crate::display::{
     confirmation, display_board, display_ids, display_move_array, display_tops, input_int,
@@ -225,6 +227,7 @@ pub fn play_bvb_game(
     let mut info_matrix: InfoMatrix = generate_info_matrix(board);
     let mut is_white = true;
 
+    let mut current_move = 0;
     while is_won(&info_matrix) == 0 {
         let bot_move: (MoveArray, f64);
         if is_white {
@@ -264,6 +267,17 @@ pub fn play_bvb_game(
         }
         make_move(&mut board, &mut info_matrix, &is_white, &bot_move.0);
         is_white = !is_white;
+
+        //Ending the game with a random winner if it takes WAYYYY too long
+        current_move += 1;
+        if current_move >= 200 {
+            let mut rng = rand::thread_rng();
+            if rng.gen_bool(0.5) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
     }
     is_won(&info_matrix)
 }

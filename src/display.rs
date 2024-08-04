@@ -137,3 +137,18 @@ pub fn confirmation(confirmation_text: String, yes_text: String, no_text: String
         return confirmation;
     }
 }
+
+pub fn textless_confirmation(confirmation_text: String) -> bool {
+    let confirmation = Confirm::new()
+        .with_prompt(confirmation_text)
+        .interact()
+        .unwrap();
+
+    if confirmation {
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        return confirmation;
+    } else {
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        return confirmation;
+    }
+}
