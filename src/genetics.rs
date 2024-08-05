@@ -148,7 +148,7 @@ fn convert_vec_to_string_vec(data: Vec<[f64; 7]>) -> Vec<String> {
         .collect()
 }
 
-fn write_results(
+fn write_hyperparams(
     elapsed: &Duration,
     depth: &i32,
     pop_size: &i32,
@@ -174,7 +174,7 @@ fn write_results(
 
     let all_data_str: Vec<&str> = all_data.iter().map(AsRef::as_ref).collect();
 
-    let _ = append_to_csv("Output.csv", &all_data_str);
+    let _ = append_to_csv("log/Hyperparams.csv", &all_data_str);
 }
 
 fn write_generation(pop: &mut Vec<[f64; 7]>) {
@@ -186,9 +186,10 @@ fn write_generation(pop: &mut Vec<[f64; 7]>) {
     for i in (0..all_data_str.len()).step_by(8) {
         all_data_str.insert(i, &"");
     }
+    all_data_str.remove(0);
 
     // Append all data to CSV as a single column
-    let _ = append_to_csv("Generations.csv", &all_data_str);
+    let _ = append_to_csv("log/Generations.csv", &all_data_str);
 }
 
 pub fn evolve() {
@@ -213,9 +214,9 @@ pub fn evolve() {
 
     let start = SystemTime::now();
     let mut pop = init_population(pop_size);
+    let mut pop_hist: Vec<Vec<[f64; 7]>> = vec![];
 
-    let _ = append_to_csv("Generations.csv", &[""]);
-    write_generation(&mut pop);
+    pop_hist.push(pop.clone());
     for i in 0..generations {
         if use_mp {
             fight_par(depth, &reproduction_number, &mut pop);
@@ -227,13 +228,13 @@ pub fn evolve() {
         println!("Winners of generation: {i}");
         print_winners(&mut pop);
         reproduce(&mut pop, &pop_size);
-        write_generation(&mut pop);
+        pop_hist.push(pop.clone());
         mutate(&mut pop, &reproduction_number, &mutation_rate);
     }
 
     match start.elapsed() {
         Ok(elapsed) => {
-            write_results(
+            write_hyperparams(
                 &elapsed,
                 &depth,
                 &pop_size,
@@ -242,6 +243,10 @@ pub fn evolve() {
                 &reproduction_number,
                 &use_mp,
             );
+            let _ = append_to_csv("log/Generations.csv", &[""]);
+            for pop_step in pop_hist.iter_mut() {
+                write_generation(pop_step);
+            }
         }
         Err(e) => {
             println!("Error: {e:?}");

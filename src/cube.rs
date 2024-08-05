@@ -30,7 +30,13 @@ pub fn make_move(
     move_array: &MoveArray,
 ) -> bool {
     let [mut cube_id, forward_fields, turn_direction, mut is_sw] = move_array;
-    if info_matrix[cube_id as usize][3] != *is_white_player as i32 {
+
+    //Handling an index oob error that comes up if I test this
+    if info_matrix
+        .get(cube_id as usize)
+        .and_then(|row| row.get(3))
+        .map_or(true, |&value| value != *is_white_player as i32)
+    {
         return true;
     }
 

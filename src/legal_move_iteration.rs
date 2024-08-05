@@ -3,6 +3,8 @@ use crate::game::{Board, InfoMatrix};
 use crate::libcube::get_top;
 use std::collections::HashSet;
 
+// None of this file is actually used for the minmax algorithm
+
 pub fn discard_legal_moves(
     board: &Board,
     info_matrix: &InfoMatrix,
