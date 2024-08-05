@@ -10,3 +10,6 @@ Time,Depth,Pop size,Generations,Mutation rate,Reproduction number,Use multiproce
 827.1632544,4,16,1,1,4,true
 11264.0222413,6,16,1,1,4,true
 20297.3913915,5,16,1,1,4,true
+4.3877344,1,8,1,1,2,true
+1.2433591,1,8,1,1,2
+1.1415208,1,8,1,1,2

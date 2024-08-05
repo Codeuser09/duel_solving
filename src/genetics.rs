@@ -8,7 +8,7 @@ use rand::Rng;
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::fs::OpenOptions;
 
-fn get_genetic_variables() -> (i32, i32, i32, f64, i32, bool) {
+fn get_genetic_variables() -> (i32, i32, i32, f64, i32) {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     let depth = input_int(String::from(
         "Please enter the amount of moves that the bot should calculate into the future:",
@@ -26,15 +26,12 @@ fn get_genetic_variables() -> (i32, i32, i32, f64, i32, bool) {
         "Please enter how many bots are allowed to reproduce",
     ));
 
-    let use_mp = textless_confirmation(String::from("Should it use multiprocessing?"));
-
     return (
         depth,
         pop_size,
         generations,
         mutation_rate,
         reproduction_number,
-        use_mp,
     );
 }
 
@@ -50,26 +47,14 @@ fn init_population(pop_size: i32) -> Vec<[f64; 7]> {
     return bot_vector;
 }
 
-fn fight(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>) {
-    while pop.len() as i32 > *reproduction_number {
-        // while population.len() as i32 != reproduction_number {
-        let mut new_pop: Vec<[f64; 7]> = vec![];
-        let mut bot_id = 0;
-        while bot_id < pop.len() {
-            if play_bvb_game(pop[bot_id].into(), pop[bot_id + 1].into(), depth) == 1 {
-                // population.remove(bot_id);
-                new_pop.push(pop[bot_id]);
-            } else {
-                // population.remove(bot_id + 1);
-                new_pop.push(pop[bot_id + 1]);
-            }
-            bot_id += 2;
-        }
-        *pop = new_pop;
-    }
-}
-
-fn fight_par(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>) {
+fn fight(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>, generation: &i32) {
+    println!("");
+    println!(
+        "Starting generation {} with {} bots, {} bots will survive",
+        generation,
+        pop.len(),
+        reproduction_number
+    );
     while pop.len() as i32 > *reproduction_number {
         let new_pop: Vec<[f64; 7]> = (0..pop.len())
             .into_par_iter()
@@ -84,6 +69,7 @@ fn fight_par(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>) {
             .collect();
 
         *pop = new_pop;
+        println!("{} bots left on generation {}", pop.len(), generation);
     }
 }
 
@@ -119,12 +105,6 @@ fn mutate(pop: &mut Vec<[f64; 7]>, reproduction_number: &i32, mutation_rate: &f6
     }
 }
 
-fn print_winners(pop: &mut Vec<[f64; 7]>) {
-    for bot in pop {
-        println!("This bot values: Cube amount: {}, Winning square dist.: {}, Legal move amount: {}, top value sum: {}, dist. to own king sum: {}, dist. to enemy king sum: {}, Interesting move amount: {}", bot[0], bot[1], bot[2], bot[3], bot[4], bot[5], bot[6]);
-    }
-}
-
 fn append_to_csv(file_path: &str, row: &[&str]) -> Result<(), Box<dyn Error>> {
     let file = OpenOptions::new().append(true).open(file_path)?;
 
@@ -155,13 +135,7 @@ fn write_hyperparams(
     generations: &i32,
     mutation_rate: &f64,
     reproduction_number: &i32,
-    use_mp: &bool,
 ) {
-    println!("");
-    println!("");
-    println!("The experiment took {} Seconds", elapsed.as_secs_f64());
-    println!("The hyperparameters were: Depth: {depth}, pop_size: {pop_size}, generations: {generations}, mutation_rate: {mutation_rate}, reproduction_number: {reproduction_number}, use multiprocessing: {use_mp}");
-
     let all_data = vec![
         elapsed.as_secs_f64().to_string(),
         depth.to_string(),
@@ -169,7 +143,6 @@ fn write_hyperparams(
         generations.to_string(),
         mutation_rate.to_string(),
         reproduction_number.to_string(),
-        use_mp.to_string(),
     ];
 
     let all_data_str: Vec<&str> = all_data.iter().map(AsRef::as_ref).collect();
@@ -193,7 +166,7 @@ fn write_generation(pop: &mut Vec<[f64; 7]>) {
 }
 
 pub fn evolve() {
-    let (depth, pop_size, generations, mutation_rate, reproduction_number, use_mp) =
+    let (depth, pop_size, generations, mutation_rate, reproduction_number) =
         get_genetic_variables();
 
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -218,15 +191,7 @@ pub fn evolve() {
 
     pop_hist.push(pop.clone());
     for i in 0..generations {
-        if use_mp {
-            fight_par(depth, &reproduction_number, &mut pop);
-        } else {
-            fight(depth, &reproduction_number, &mut pop);
-        }
-        println!("");
-        println!("");
-        println!("Winners of generation: {i}");
-        print_winners(&mut pop);
+        fight(depth, &reproduction_number, &mut pop, &i);
         reproduce(&mut pop, &pop_size);
         pop_hist.push(pop.clone());
         mutate(&mut pop, &reproduction_number, &mutation_rate);
@@ -241,13 +206,12 @@ pub fn evolve() {
                 &generations,
                 &mutation_rate,
                 &reproduction_number,
-                &use_mp,
             );
             let _ = append_to_csv("log/Generations.csv", &[""]);
             for pop_step in pop_hist.iter_mut() {
                 write_generation(pop_step);
             }
-            fight(depth, &1, &mut pop);
+            fight(depth, &1, &mut pop, &-1);
             write_generation(&mut pop);
         }
         Err(e) => {
