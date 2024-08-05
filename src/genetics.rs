@@ -247,6 +247,8 @@ pub fn evolve() {
             for pop_step in pop_hist.iter_mut() {
                 write_generation(pop_step);
             }
+            fight(depth, &1, &mut pop);
+            write_generation(&mut pop);
         }
         Err(e) => {
             println!("Error: {e:?}");
