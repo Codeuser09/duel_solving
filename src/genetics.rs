@@ -1,8 +1,9 @@
 use std::error::Error;
 use std::time::{Duration, SystemTime};
 
-use crate::display::{input_float, input_int, textless_confirmation};
+use crate::display::{input_float, input_int};
 use crate::interaction::play_bvb_game;
+use chrono::{DateTime, Utc};
 use csv::WriterBuilder;
 use rand::Rng;
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
@@ -14,16 +15,16 @@ fn get_genetic_variables() -> (i32, i32, i32, f64, i32) {
         "Please enter the amount of moves that the bot should calculate into the future:",
     ));
     let pop_size = input_int(String::from(
-        "Please enter the amount of bots each generation should have",
+        "Please enter the amount of bots each generation should have at the start",
     ));
-    let generations = input_int(String::from(
-        "Please enter the amount of generations the simulation should run for",
+    let reproduction_number = input_int(String::from(
+        "Please enter how many bots of these survive and are allowed to reproduce",
     ));
     let mutation_rate = input_float(String::from(
         "Please enter the random mutation added to each parameter of a child",
     ));
-    let reproduction_number = input_int(String::from(
-        "Please enter how many bots are allowed to reproduce",
+    let generations = input_int(String::from(
+        "Please enter the amount of generations the simulation should run for",
     ));
 
     return (
@@ -47,13 +48,32 @@ fn init_population(pop_size: i32) -> Vec<[f64; 7]> {
     return bot_vector;
 }
 
-fn fight(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>, generation: &i32) {
+fn fight(
+    depth: i32,
+    reproduction_number: &i32,
+    pop: &mut Vec<[f64; 7]>,
+    generation: &i32,
+    secs: &f64,
+    generations: &i32,
+    pop_size: &i32,
+) {
+    let now = SystemTime::now();
+    let datetime: DateTime<Utc> = now.into();
+    let datetime_str = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+    let mut eta = 0f64;
+    if *generation != 0 {
+        eta = (*secs / *generation as f64 * *generations as f64) - secs;
+    }
+
     println!("");
     println!(
-        "Starting generation {} with {} bots, {} bots will survive",
+        "{} Starting generation {}/{} with {} bots, {} bots will survive, ETA: {}s",
+        datetime_str,
         generation,
+        generations,
         pop.len(),
-        reproduction_number
+        reproduction_number,
+        eta
     );
     while pop.len() as i32 > *reproduction_number {
         let new_pop: Vec<[f64; 7]> = (0..pop.len())
@@ -69,7 +89,20 @@ fn fight(depth: i32, reproduction_number: &i32, pop: &mut Vec<[f64; 7]>, generat
             .collect();
 
         *pop = new_pop;
-        println!("{} bots left on generation {}", pop.len(), generation);
+        let now = SystemTime::now();
+        let datetime: DateTime<Utc> = now.into();
+        let datetime_str = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+
+        eta = eta - (secs / *generation as f64 * (1f64 - (pop.len() as f64 / *pop_size as f64)));
+
+        println!(
+            "{} {} bots left on generation {}/{}, ETA: {}s",
+            datetime_str,
+            pop.len(),
+            generation,
+            generations,
+            eta
+        );
     }
 }
 
@@ -188,10 +221,28 @@ pub fn evolve() {
     let start = SystemTime::now();
     let mut pop = init_population(pop_size);
     let mut pop_hist: Vec<Vec<[f64; 7]>> = vec![];
+    let mut secs = 0.0;
 
     pop_hist.push(pop.clone());
     for i in 0..generations {
-        fight(depth, &reproduction_number, &mut pop, &i);
+        match start.elapsed() {
+            Ok(elapsed) => {
+                secs = elapsed.as_secs_f64();
+            }
+            Err(e) => {
+                println!("Error: {e:?}");
+            }
+        }
+
+        fight(
+            depth,
+            &reproduction_number,
+            &mut pop,
+            &i,
+            &secs,
+            &generations,
+            &pop_size,
+        );
         reproduce(&mut pop, &pop_size);
         pop_hist.push(pop.clone());
         mutate(&mut pop, &reproduction_number, &mutation_rate);
@@ -211,7 +262,7 @@ pub fn evolve() {
             for pop_step in pop_hist.iter_mut() {
                 write_generation(pop_step);
             }
-            fight(depth, &1, &mut pop, &-1);
+            fight(depth, &1, &mut pop, &-1, &0f64, &generations, &pop_size);
             write_generation(&mut pop);
         }
         Err(e) => {
