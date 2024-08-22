@@ -36,12 +36,14 @@ fn get_genetic_variables() -> (i32, i32, i32, f64, i32) {
     );
 }
 
-fn init_population(pop_size: i32) -> Vec<[f64; 7]> {
+fn init_population(pop_size: i32) -> Vec<[[f64; 3]; 7]> {
     let mut bot_vector = vec![];
-    let mut current_bot = [0f64; 7];
+    let mut current_bot = [[0f64; 3]; 7];
     for _ in 0..pop_size {
         for w in 0..current_bot.len() {
-            current_bot[w] = rand::thread_rng().gen_range(-100.0..=100.0);
+            for gp in 0..current_bot[w].len() {
+                current_bot[w][gp] = rand::thread_rng().gen_range(-100.0..=100.0);
+            }
         }
         bot_vector.push(current_bot);
     }
@@ -51,7 +53,7 @@ fn init_population(pop_size: i32) -> Vec<[f64; 7]> {
 fn fight(
     depth: i32,
     reproduction_number: &i32,
-    pop: &mut Vec<[f64; 7]>,
+    pop: &mut Vec<[[f64; 3]; 7]>,
     generation: &i32,
     secs: &f64,
     generations: &i32,
@@ -76,7 +78,7 @@ fn fight(
         eta
     );
     while pop.len() as i32 > *reproduction_number {
-        let new_pop: Vec<[f64; 7]> = (0..pop.len())
+        let new_pop: Vec<[[f64; 3]; 7]> = (0..pop.len())
             .into_par_iter()
             .step_by(2)
             .map(|bot_id| {
@@ -106,15 +108,17 @@ fn fight(
     }
 }
 
-fn elementwise_avg(array1: &[f64; 7], array2: &[f64; 7]) -> [f64; 7] {
-    let mut avg_array = [0.0f64; 7];
+fn elementwise_avg(array1: &[[f64; 3]; 7], array2: &[[f64; 3]; 7]) -> [[f64; 3]; 7] {
+    let mut avg_array = [[0f64; 3]; 7];
     for i in 0..array1.len() {
-        avg_array[i] = (array1[i] + array2[i]) / 2f64;
+        for e in 0..array1[i].len() {
+            avg_array[i][e] = (array1[i][e] + array2[i][e]) / 2f64;
+        }
     }
     avg_array
 }
 
-fn reproduce(pop: &mut Vec<[f64; 7]>, pop_size: &i32) {
+fn reproduce(pop: &mut Vec<[[f64; 3]; 7]>, pop_size: &i32) {
     while pop.len() < *pop_size as usize {
         for bot_id in 0..pop.len() {
             if pop.len() == *pop_size as usize {
@@ -128,11 +132,13 @@ fn reproduce(pop: &mut Vec<[f64; 7]>, pop_size: &i32) {
     }
 }
 
-fn mutate(pop: &mut Vec<[f64; 7]>, reproduction_number: &i32, mutation_rate: &f64) {
+fn mutate(pop: &mut Vec<[[f64; 3]; 7]>, reproduction_number: &i32, mutation_rate: &f64) {
     for (i, bot) in pop.iter_mut().enumerate() {
         if i >= *reproduction_number as usize {
             for gene in bot.iter_mut() {
-                *gene += rand::thread_rng().gen_range(-*mutation_rate..=*mutation_rate);
+                for gp in gene {
+                    *gp += rand::thread_rng().gen_range(-*mutation_rate..=*mutation_rate);
+                }
             }
         }
     }
@@ -151,14 +157,16 @@ fn append_to_csv(file_path: &str, row: &[&str]) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn convert_vec_to_string_vec(data: Vec<[f64; 7]>) -> Vec<String> {
-    data.into_iter()
-        .flat_map(|row| {
-            row.iter()
-                .map(|&num| num.to_string())
-                .collect::<Vec<String>>()
-        })
-        .collect()
+fn convert_vec_to_string_vec(data: Vec<[[f64; 3]; 7]>) -> Vec<String> {
+    let mut string_data: Vec<String> = vec![];
+    for bot in data {
+        for gene in bot {
+            for gp in gene {
+                string_data.push(gp.to_string());
+            }
+        }
+    }
+    string_data
 }
 
 fn write_hyperparams(
@@ -183,13 +191,13 @@ fn write_hyperparams(
     let _ = append_to_csv("log/Hyperparams.csv", &all_data_str);
 }
 
-fn write_generation(pop: &mut Vec<[f64; 7]>) {
+fn write_generation(pop: &mut Vec<[[f64; 3]; 7]>) {
     let string_data = convert_vec_to_string_vec(pop.clone());
     // Convert to Vec<&str> for the append_to_csv function
     let mut all_data_str: Vec<&str> = string_data.iter().map(AsRef::as_ref).collect();
 
     // Inserting empty string after each bot
-    for i in (0..all_data_str.len()).step_by(8) {
+    for i in (0..all_data_str.len()).step_by(22) {
         all_data_str.insert(i, &"");
     }
     all_data_str.remove(0);
@@ -220,7 +228,7 @@ pub fn evolve() {
 
     let start = SystemTime::now();
     let mut pop = init_population(pop_size);
-    let mut pop_hist: Vec<Vec<[f64; 7]>> = vec![];
+    let mut pop_hist: Vec<Vec<[[f64; 3]; 7]>> = vec![];
     let mut secs = 0.0;
 
     pop_hist.push(pop.clone());

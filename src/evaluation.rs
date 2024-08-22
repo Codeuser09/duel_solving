@@ -1,5 +1,5 @@
 use crate::cube::MoveArray;
-use crate::game::{Board, InfoMatrix};
+use crate::game::{self, Board, InfoMatrix};
 use crate::legal_move_iteration::{discard_legal_moves, get_possible_moves};
 use crate::libcube::get_top;
 use crate::minimax::is_interesting;
@@ -145,15 +145,16 @@ fn interesting_move_amount(
 pub fn evaluate_position(
     board: &Board,
     info_matrix: &InfoMatrix,
-    cube_amount_weight: f64,
-    winning_square_weight: f64,
-    legal_move_weight: f64,
-    top_value_weight: f64,
-    distance_to_own_king_weight: f64,
-    distance_to_enemy_king_weight: f64,
-    interesting_move_weight: f64,
+    cube_amount_weight: [f64; 3],
+    winning_square_weight: [f64; 3],
+    legal_move_weight: [f64; 3],
+    top_value_weight: [f64; 3],
+    distance_to_own_king_weight: [f64; 3],
+    distance_to_enemy_king_weight: [f64; 3],
+    interesting_move_weight: [f64; 3],
 ) -> f64 {
     let mut evaluation = 0f64;
+    let game_phase: usize = (info_matrix.len() as f64 / 6f64).round() as usize - 1;
 
     let mut w_legal_moves = get_possible_moves(&board, &info_matrix, true);
     let mut b_legal_moves = get_possible_moves(&board, &info_matrix, false);
@@ -162,14 +163,15 @@ pub fn evaluate_position(
 
     let (distance_to_your_king, distance_to_enemy_king) = king_distance(&info_matrix);
 
-    evaluation += cube_amount_evaluation(info_matrix) * cube_amount_weight;
-    evaluation += winning_square_distance(&info_matrix) * winning_square_weight;
-    evaluation += w_legal_moves.len() as f64 - b_legal_moves.len() as f64 * legal_move_weight;
-    evaluation += (top_value_total(&board, &info_matrix)) * top_value_weight;
-    evaluation += distance_to_your_king * distance_to_own_king_weight;
-    evaluation += distance_to_enemy_king * distance_to_enemy_king_weight;
+    evaluation += cube_amount_evaluation(info_matrix) * cube_amount_weight[game_phase];
+    evaluation += winning_square_distance(&info_matrix) * winning_square_weight[game_phase];
+    evaluation +=
+        w_legal_moves.len() as f64 - b_legal_moves.len() as f64 * legal_move_weight[game_phase];
+    evaluation += (top_value_total(&board, &info_matrix)) * top_value_weight[game_phase];
+    evaluation += distance_to_your_king * distance_to_own_king_weight[game_phase];
+    evaluation += distance_to_enemy_king * distance_to_enemy_king_weight[game_phase];
     evaluation += interesting_move_amount(&board, &info_matrix, &w_legal_moves, &b_legal_moves)
-        * interesting_move_weight;
+        * interesting_move_weight[game_phase];
 
     return evaluation;
 }

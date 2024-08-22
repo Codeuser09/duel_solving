@@ -38,13 +38,13 @@ pub fn minimax(
     mut alpha: f64,
     mut beta: f64,
     is_white: bool,
-    cube_amount_weight: f64,
-    winning_square_weight: f64,
-    legal_move_weight: f64,
-    top_value_weight: f64,
-    distance_to_own_king_weight: f64,
-    distance_to_enemy_king_weight: f64,
-    interesting_move_weight: f64,
+    cube_amount_weight: [f64; 3],
+    winning_square_weight: [f64; 3],
+    legal_move_weight: [f64; 3],
+    top_value_weight: [f64; 3],
+    distance_to_own_king_weight: [f64; 3],
+    distance_to_enemy_king_weight: [f64; 3],
+    interesting_move_weight: [f64; 3],
 ) -> (MoveArray, f64) {
     let is_game_won = is_won(&info_matrix);
     if depth == 0 || is_game_won != 0 {

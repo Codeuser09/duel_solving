@@ -127,13 +127,13 @@ pub fn play_bvh_game() {
 }
 
 pub fn display_play_bvb_game(
-    cube_amount_weight: f64,
-    winning_square_weight: f64,
-    legal_move_weight: f64,
-    top_value_weight: f64,
-    distance_to_own_king_weight: f64,
-    distance_to_enemy_king_weight: f64,
-    interesting_move_weight: f64,
+    cube_amount_weight: [f64; 3],
+    winning_square_weight: [f64; 3],
+    legal_move_weight: [f64; 3],
+    top_value_weight: [f64; 3],
+    distance_to_own_king_weight: [f64; 3],
+    distance_to_enemy_king_weight: [f64; 3],
+    interesting_move_weight: [f64; 3],
 ) {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     let mut board: Board = generate_startpos();
@@ -199,8 +199,24 @@ pub fn display_play_bvb_game(
 }
 
 pub fn play_bvb_game(
-    w_weight_array: (f64, f64, f64, f64, f64, f64, f64),
-    b_weight_array: (f64, f64, f64, f64, f64, f64, f64),
+    w_weight_array: (
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+    ),
+    b_weight_array: (
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+        [f64; 3],
+    ),
     depth: i32,
 ) -> i32 {
     let (
