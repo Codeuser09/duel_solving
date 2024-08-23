@@ -1,5 +1,5 @@
 use crate::cube::MoveArray;
-use crate::game::{self, Board, InfoMatrix};
+use crate::game::{Board, InfoMatrix};
 use crate::legal_move_iteration::{discard_legal_moves, get_possible_moves};
 use crate::libcube::get_top;
 use crate::minimax::is_interesting;
