@@ -154,7 +154,7 @@ pub fn evaluate_position(
     interesting_move_weight: [f64; 3],
 ) -> f64 {
     let mut evaluation = 0f64;
-    let game_phase: usize = (info_matrix.len() as f64 / 6f64).round() as usize - 1;
+    let game_phase: usize = (info_matrix.len() as f64 / 6f64).ceil() as usize - 1;
 
     let mut w_legal_moves = get_possible_moves(&board, &info_matrix, true);
     let mut b_legal_moves = get_possible_moves(&board, &info_matrix, false);
