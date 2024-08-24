@@ -1,13 +1,22 @@
 use std::error::Error;
+use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
 use crate::display::{input_float, input_int};
 use crate::interaction::play_bvb_game;
 use chrono::{DateTime, Utc};
-use csv::WriterBuilder;
+use csv::{ReaderBuilder, WriterBuilder};
+use encoding_rs;
 use rand::Rng;
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
+use std::fs;
 use std::fs::OpenOptions;
+
+type Parameter = [f64; 3];
+type Bot = [Parameter; 7];
+type Generation = Vec<Bot>;
+type Experiment = Vec<Generation>;
+type ExperimentLog = Vec<Experiment>;
 
 fn get_genetic_variables() -> (i32, i32, i32, f64, i32) {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -205,6 +214,104 @@ fn write_generation(pop: &mut Vec<[[f64; 3]; 7]>) {
 
     // Append all data to CSV as a single column
     let _ = append_to_csv("log/Generations.csv", &all_data_str);
+}
+
+pub fn read_generations() -> ExperimentLog {
+    let file = fs::read("log/Generations.csv").unwrap();
+    let (res, _, _) = encoding_rs::SHIFT_JIS.decode(&file);
+
+    let mut reader = ReaderBuilder::new()
+        .flexible(true)
+        .has_headers(true)
+        .from_reader(res.as_bytes());
+
+    let mut experiment_log: ExperimentLog = vec![vec![vec![]]];
+    let mut experiment: Experiment = vec![vec![]];
+    let mut c_subtract = 1;
+
+    for result in reader.records() {
+        let record = result.unwrap(); //One line of the csv every time
+
+        //Redefining generation as an empty vector
+        let mut generation: Generation = vec![];
+        c_subtract = 1;
+        let mut bot: Bot = [[0f64; 3]; 7];
+        let mut parameter_index = 0;
+        let mut finished_bot = false;
+        let mut finished_generation = false;
+
+        //If the experiment finished, push it to experiment log and ignore the empty space
+        if record.get(0).unwrap() == "" {
+            experiment_log.push(experiment);
+            experiment = vec![vec![]];
+            continue;
+        }
+
+        // if record.get(24).unwrap() == "" {
+        //     continue;
+        // }
+
+        //Looping through a single generation, stepping by three to make one parameter (through three game phases) one step
+        for mut c in (0..record.clone().len()).step_by(3) {
+            //To prevent it erroring on reading the first column and then trying to subtract
+            if c == 0 {
+                continue;
+            } else {
+                //To prevent weirdness with the step size, because it needs to be bigger by one with 0 for some reason
+                c -= c_subtract;
+            }
+
+            //Resetting the parameter
+            let mut parameter: [f64; 3] = [0f64; 3];
+
+            let _value_at_c = record.get(c).unwrap();
+
+            //Getting values for parameter
+            for i in 0..=2 {
+                let parameter_phase_str = record.get(c - 2 + i).unwrap();
+                if parameter_phase_str == "" {
+                    let mut end_test = true;
+                    for parameter in bot {
+                        for gf in parameter {
+                            if gf != 0f64 {
+                                end_test = false
+                            }
+                        }
+                    }
+                    if end_test {
+                        finished_generation = true;
+                        break;
+                    }
+
+                    generation.push(bot);
+                    bot = [[0f64; 3]; 7];
+                    finished_bot = true;
+                    parameter_index = 0;
+                    break;
+                }
+                parameter[i] = FromStr::from_str(parameter_phase_str).unwrap();
+            }
+
+            if finished_bot && !finished_generation {
+                finished_bot = false;
+                c_subtract += 2;
+                continue;
+            }
+
+            if finished_generation {
+                break;
+            }
+
+            //Append it to the bot and increase param index
+            if parameter_index == 7 {
+                println!("Test");
+            }
+            bot[parameter_index] = parameter;
+            parameter_index += 1;
+        }
+        experiment.push(generation);
+    }
+    return experiment_log;
 }
 
 pub fn evolve() {
