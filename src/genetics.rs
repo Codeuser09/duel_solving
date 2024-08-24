@@ -69,10 +69,11 @@ fn fight(
 
     println!("");
     println!(
-        "{} Starting generation {}/{} with {} bots, {} bots will survive, ETA: {}s",
+        "{} Starting generation {}/{} with depth {} and {} bots, {} bots will survive. ETA: {}s",
         datetime_str,
         generation,
         generations,
+        depth,
         pop.len(),
         reproduction_number,
         eta
