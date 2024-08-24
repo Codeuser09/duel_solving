@@ -227,7 +227,7 @@ pub fn read_generations() -> ExperimentLog {
 
     let mut experiment_log: ExperimentLog = vec![vec![vec![]]];
     let mut experiment: Experiment = vec![vec![]];
-    let mut c_subtract = 1;
+    let mut c_subtract;
 
     for result in reader.records() {
         let record = result.unwrap(); //One line of the csv every time
