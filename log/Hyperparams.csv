@@ -1,4 +1,7 @@
-Time,Depth,Pop size,Generations,Mutation rate,Reproduction number
-136.9776216,1,8,10,10,2
-9.1228052,1,8,10,10,2
-26.2205264,1,8,10,10,2
+Time,Depth,Pop size,Generations,Mutation rate,Reproduction number,"Train from Experiment (-2 = None, -1 = Last)",Train from generation (-1 = Last)
+321.9563434,1,8,10,10,2,-2,-1
+786.2189666,1,16,10,10,2,-1,-1
+415.5443464,1,32,10,10,2,-1,-1
+710.3086129,1,64,10,10,4,-1,-1
+243.3111516,1,16,10,10,2,-1,-1
+940258.9277106,4,256,100,10,16,-2,-1

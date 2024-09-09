@@ -2,8 +2,8 @@ use crate::cube::make_move;
 use crate::display::{display_info, display_move_array};
 use crate::evaluation::evaluate_position;
 use crate::game::{generate_info_matrix, generate_startpos, Board, InfoMatrix};
-use crate::genetics::read_generations;
 use crate::legal_move_iteration::get_possible_moves;
+use crate::libgenetics::retrieve_experiment_log;
 use std::io;
 use std::process::exit;
 
@@ -171,6 +171,7 @@ pub fn play_sample_game() {
         println!();
     }
 }
+
 pub fn dev_mode() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     println!("What do you want to do?");
@@ -194,8 +195,8 @@ pub fn dev_mode() {
         display_legal_moves();
     }
     if purpose == 3 {
-        let generations = read_generations();
-        println!("{:?}", generations);
+        let experiment_log = retrieve_experiment_log();
+        println!("{:?}", experiment_log);
     }
     if purpose == 4 {
         exit(0);
